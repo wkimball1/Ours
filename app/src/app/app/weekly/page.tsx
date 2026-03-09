@@ -11,7 +11,7 @@ export default async function WeeklyPage() {
   const session = await ensureWeeklySession(couple.id);
   if (!session) return <p className="text-sm text-stone-600">Weekly content is not configured yet. Run `seed_week1.sql` and refresh.</p>;
 
-  const partnerId = await getPartnerId(couple, user.id);
+  const partnerId = getPartnerId(couple, user.id);
 
   const { data: prompts } = await supabase
     .from("prompts")
@@ -36,7 +36,7 @@ export default async function WeeklyPage() {
         .order("step_index")
     : { data: [] };
 
-  const totalPrompts = prompts?.length ?? 6;
+  const totalPrompts = prompts?.length ?? 0;
   const mineCount = (mine ?? []).filter((r) => (r.response_text ?? "").trim().length > 0).length;
   const partnerCount = (partnerRows ?? []).filter((r) => (r.response_text ?? "").trim().length > 0).length;
 

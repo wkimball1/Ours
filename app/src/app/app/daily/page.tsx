@@ -12,7 +12,7 @@ export default async function DailyPage() {
   const session = await ensureDailySession(couple.id);
   if (!session) return <p className="text-sm text-stone-600">Daily content is not configured yet. Run `seed_week1.sql` and refresh.</p>;
 
-  const partnerId = await getPartnerId(couple, user.id);
+  const partnerId = getPartnerId(couple, user.id);
 
   const { data: prompts } = await supabase
     .from("prompts")
@@ -37,7 +37,7 @@ export default async function DailyPage() {
         .order("step_index")
     : { data: [] };
 
-  const totalPrompts = prompts?.length ?? 3;
+  const totalPrompts = prompts?.length ?? 0;
   const mineCount = (mine ?? []).filter((r) => (r.response_text ?? "").trim().length > 0).length;
   const partnerCount = (partnerRows ?? []).filter((r) => (r.response_text ?? "").trim().length > 0).length;
 

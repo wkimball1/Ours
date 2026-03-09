@@ -23,8 +23,10 @@ export default async function AppHomePage() {
     );
   }
 
-  const daily = await ensureDailySession(couple.id);
-  const weekly = await ensureWeeklySession(couple.id);
+  const [daily, weekly] = await Promise.all([
+    ensureDailySession(couple.id),
+    ensureWeeklySession(couple.id),
+  ]);
 
   if (!daily || !weekly) {
     return (
@@ -35,7 +37,7 @@ export default async function AppHomePage() {
     );
   }
 
-  const partnerId = await getPartnerId(couple, user.id);
+  const partnerId = getPartnerId(couple, user.id);
 
   const { count: unlockedCount } = await supabase
     .from("sessions")
@@ -43,8 +45,10 @@ export default async function AppHomePage() {
     .eq("couple_id", couple.id)
     .eq("status", "unlocked");
 
-  const dailyState = await getSessionState(supabase, daily.id, user.id, partnerId, 3);
-  const weeklyState = await getSessionState(supabase, weekly.id, user.id, partnerId, 6);
+  const [dailyState, weeklyState] = await Promise.all([
+    getSessionState(supabase, daily.id, user.id, partnerId, 3),
+    getSessionState(supabase, weekly.id, user.id, partnerId, 6),
+  ]);
 
   const { data: latestInvite } = await supabase
     .from("invites")

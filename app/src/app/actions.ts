@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { ensureProfile, getMe, getMyCouple, refreshSessionUnlock } from "@/lib/ours";
+import { ensureProfile, getMe, getMyCouple, getPartnerId, refreshSessionUnlock } from "@/lib/ours";
 import crypto from "crypto";
 
 async function trackEvent(eventName: string, metadata: Record<string, unknown> = {}) {
@@ -14,6 +14,12 @@ async function trackEvent(eventName: string, metadata: Record<string, unknown> =
     event_name: eventName,
     metadata,
   });
+}
+
+function revalidateSessionPaths() {
+  revalidatePath("/app");
+  revalidatePath("/app/daily");
+  revalidatePath("/app/weekly");
 }
 
 function readAttribution(formData: FormData, fallbackSource = "unknown") {
@@ -167,9 +173,7 @@ export async function saveResponseAction(formData: FormData) {
 
   const couple = await getMyCouple();
   if (couple) await refreshSessionUnlock(sessionId, couple);
-  revalidatePath("/app");
-  revalidatePath("/app/daily");
-  revalidatePath("/app/weekly");
+  revalidateSessionPaths();
 }
 
 export async function saveSessionResponsesAction(formData: FormData) {
@@ -206,9 +210,7 @@ export async function saveSessionResponsesAction(formData: FormData) {
   if (couple) await refreshSessionUnlock(sessionId, couple);
   await trackEvent("session_submitted", { session_id: sessionId, responses_count: entries.length });
 
-  revalidatePath("/app");
-  revalidatePath("/app/daily");
-  revalidatePath("/app/weekly");
+  revalidateSessionPaths();
 }
 
 export async function requestReassuranceAction() {
@@ -217,7 +219,7 @@ export async function requestReassuranceAction() {
   const couple = await getMyCouple();
   if (!user || !couple?.member2) return;
 
-  const toUserId = couple.member1 === user.id ? couple.member2 : couple.member1;
+  const toUserId = getPartnerId(couple, user.id)!;
 
   await supabase.from("notifications").insert({
     couple_id: couple.id,
@@ -238,7 +240,7 @@ export async function sendReassuranceMessageAction(formData: FormData) {
   const message = String(formData.get("message") || "");
   if (!user || !couple?.member2 || !message.trim()) return;
 
-  const toUserId = couple.member1 === user.id ? couple.member2 : couple.member1;
+  const toUserId = getPartnerId(couple, user.id)!;
 
   await supabase.from("notifications").insert({
     couple_id: couple.id,

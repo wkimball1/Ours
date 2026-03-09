@@ -45,7 +45,7 @@ export async function getMyCouple() {
   return data;
 }
 
-export async function getPartnerId(couple: { member1: string; member2: string | null }, userId: string) {
+export function getPartnerId(couple: { member1: string; member2: string | null }, userId: string) {
   if (!couple.member2) return null;
   return couple.member1 === userId ? couple.member2 : couple.member1;
 }
@@ -167,17 +167,18 @@ export async function refreshSessionUnlock(sessionId: string, couple: { member1:
   const required = promptRows?.length ?? 0;
   if (!required) return;
 
-  const { count: c1 } = await supabase
-    .from("responses")
-    .select("*", { count: "exact", head: true })
-    .eq("session_id", sessionId)
-    .eq("user_id", couple.member1);
-
-  const { count: c2 } = await supabase
-    .from("responses")
-    .select("*", { count: "exact", head: true })
-    .eq("session_id", sessionId)
-    .eq("user_id", couple.member2);
+  const [{ count: c1 }, { count: c2 }] = await Promise.all([
+    supabase
+      .from("responses")
+      .select("*", { count: "exact", head: true })
+      .eq("session_id", sessionId)
+      .eq("user_id", couple.member1),
+    supabase
+      .from("responses")
+      .select("*", { count: "exact", head: true })
+      .eq("session_id", sessionId)
+      .eq("user_id", couple.member2),
+  ]);
 
   if ((c1 ?? 0) >= required && (c2 ?? 0) >= required) {
     await supabase.from("sessions").update({ status: "unlocked" }).eq("id", sessionId);
