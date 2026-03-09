@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4f2ee;
+  --foreground: #1f2328;
+  --card: #ffffff;
+  --muted: #5c6670;
+  --border: #d5dbe3;
+  --ring: #25384d;
+  --brand: #1f3148;
+  --brand-soft: #e7edf5;
+  --success-bg: #ecfdf3;
+  --success-fg: #0f613d;
+  --warning-bg: #fff5df;
+  --warning-fg: #865300;
+  --danger-bg: #fff0f0;
+  --danger-fg: #8f2020;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f1115;
+    --foreground: #eceff4;
+    --card: #171a21;
+    --muted: #a6adbb;
+    --border: #2b3140;
+    --ring: #93a7c2;
+    --brand: #c8d8f2;
+    --brand-soft: #1b2434;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background:
+    radial-gradient(circle at 15% -15%, #ffffff 0, #f6f2ea 45%, transparent 70%),
+    radial-gradient(circle at 95% 10%, #eef5ff 0, transparent 42%),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background:
+      radial-gradient(circle at 10% -20%, #1b2330 0, transparent 55%),
+      radial-gradient(circle at 90% 10%, #1a2736 0, transparent 45%),
+      var(--background);
+  }
+}
+
+input,
+textarea,
+select {
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 0.875rem;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #6a7480;
+  opacity: 1;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  transition: all 170ms ease;
+}
+
+button:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid color-mix(in oklab, var(--ring), white 65%);
+  outline-offset: 2px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
