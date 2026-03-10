@@ -49,7 +49,7 @@ export default async function ChallengePage({
           <input name="first_name" placeholder="First name" className="w-full px-3 py-2.5 text-[16px]" />
           <input name="email" type="email" required placeholder="Your email" className="w-full px-3 py-2.5 text-[16px]" />
           <input name="partner_email" type="email" placeholder="Partner email (optional)" className="w-full px-3 py-2.5 text-[16px]" />
-          <button className="w-full rounded-xl bg-stone-900 p-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-800 active:scale-[0.99] dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200">
+          <button className="btn-accent w-full rounded-xl p-2.5 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 active:scale-[0.99]">
             Join the challenge
           </button>
         </form>

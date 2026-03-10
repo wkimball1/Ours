@@ -3,6 +3,20 @@ import { createCoupleAction, generateInviteAction } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
 import { ensureDailySession, ensureWeeklySession, getMe, getMyCouple, getPartnerId } from "@/lib/ours";
 import { InviteShare } from "@/components/invite-share";
+import { HeroCard } from "@/components/hero-card";
+
+function timeAgo(dateStr: string): string {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diffMs = now - then;
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 2) return "Active now";
+  if (mins < 60) return `Last seen ${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `Last seen ${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `Last seen ${days}d ago`;
+}
 
 type SessionState = "not started" | "waiting" | "unlocked";
 
@@ -17,7 +31,7 @@ export default async function AppHomePage() {
         <h2 className="text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Let’s create your space</h2>
         <p className="text-sm leading-relaxed text-stone-600 dark:text-stone-300">Start your shared home, then invite your partner with a private link when it feels right.</p>
         <form action={createCoupleAction}>
-          <button className="min-h-11 rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200">Create couple space</button>
+          <button className="min-h-11 rounded-xl px-4 py-2.5 text-sm font-semibold btn-accent transition">Create couple space</button>
         </form>
       </section>
     );
@@ -30,12 +44,22 @@ export default async function AppHomePage() {
     return (
       <section className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50 p-5">
         <h2 className="text-xl font-semibold text-amber-900">We’re almost ready</h2>
-        <p className="text-sm text-amber-800">Session content is missing for today. Please run the prompt seed script in Supabase (`seed_week1.sql`) and refresh.</p>
+        <p className="text-sm text-amber-800">Today’s prompts are still being prepared. Check back in a little while — we’ll have something meaningful waiting for you both.</p>
       </section>
     );
   }
 
   const partnerId = await getPartnerId(couple, user.id);
+
+  let partnerPresence: { first_name: string; last_active_at: string | null } | null = null;
+  if (partnerId) {
+    const { data: partnerProfile } = await supabase
+      .from("profiles")
+      .select("first_name, last_active_at")
+      .eq("id", partnerId)
+      .single();
+    partnerPresence = partnerProfile;
+  }
 
   const { count: unlockedCount } = await supabase
     .from("sessions")
@@ -61,11 +85,18 @@ export default async function AppHomePage() {
 
   return (
     <section className="grid gap-4 sm:gap-5 md:grid-cols-2">
-      <div className="rounded-3xl bg-gradient-to-br from-stone-950 via-slate-900 to-slate-700 p-6 text-white shadow-lg md:col-span-2 sm:p-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-300">Today</p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">A tiny moment for us</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-200">One honest minute can shift the whole day. No pressure, just connection.</p>
-      </div>
+      <HeroCard>
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.6)" }}>Today</p>
+          {partnerPresence?.last_active_at && (
+            <p className={`text-xs font-medium ${timeAgo(partnerPresence.last_active_at) === "Active now" ? "text-emerald-300" : "text-stone-400"}`}>
+              {partnerPresence.first_name ? `${partnerPresence.first_name}: ` : ""}{timeAgo(partnerPresence.last_active_at)}
+            </p>
+          )}
+        </div>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl" style={{ color: "#ffffff" }}>A tiny moment for us</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.8)" }}>One honest minute can shift the whole day. No pressure, just connection.</p>
+      </HeroCard>
 
       {!couple.member2 && (
         <div className="space-y-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm md:col-span-2 dark:border-stone-700 dark:bg-stone-900">
@@ -86,7 +117,23 @@ export default async function AppHomePage() {
       )}
 
       <Card title="Next visit" subtitle="Optional — add this in Settings when plans become clearer.">
-        {couple.next_visit_date ? <p className="text-xl font-semibold text-stone-900 dark:text-stone-100">{couple.next_visit_date}</p> : <p className="text-sm text-stone-600 dark:text-stone-300">No date set yet.</p>}
+        {couple.next_visit_date ? (() => {
+          const d = new Date(couple.next_visit_date + "T00:00:00");
+          const formatted = d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+          const now = new Date();
+          now.setHours(0, 0, 0, 0);
+          const diff = Math.ceil((d.getTime() - now.getTime()) / 86400000);
+          const isClose = diff > 0 && diff <= 7;
+          return (
+            <>
+              <p className={`font-semibold ${isClose ? "text-2xl text-amber-700 dark:text-amber-400" : "text-xl text-stone-900 dark:text-stone-100"}`}>{formatted}</p>
+              {diff > 7 && <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">{diff} days from now</p>}
+              {isClose && diff > 1 && <p className="mt-1 text-sm font-semibold text-amber-600 dark:text-amber-400">Only {diff} days away — almost there!</p>}
+              {diff === 1 && <p className="mt-1 text-sm font-semibold text-amber-600 dark:text-amber-400">Tomorrow! One more sleep.</p>}
+              {diff === 0 && <p className="mt-1 text-sm font-bold text-emerald-700 dark:text-emerald-400">Today! You made it.</p>}
+            </>
+          );
+        })() : <p className="text-sm leading-relaxed text-stone-600 dark:text-stone-300">Plan something to look forward to — even a video call counts. Add a date in Settings whenever you&apos;re ready.</p>}
       </Card>
 
       <Card title="Connection rhythm" subtitle="No streak pressure. Every completed moment still counts.">
@@ -113,6 +160,35 @@ export default async function AppHomePage() {
           Open Reassurance
         </Link>
       </Card>
+
+      <Card title="Love Notes" subtitle="Leave a surprise note for your partner to find whenever they open the app.">
+        <Link href="/app/love-notes" className="mt-1 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
+          Open Love Notes
+        </Link>
+      </Card>
+
+      <Card title="Our Journal" subtitle="A shared space for thoughts, feelings, and memories — no prompts needed.">
+        <Link href="/app/journal" className="mt-1 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
+          Open Journal
+        </Link>
+      </Card>
+
+      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm md:col-span-2 dark:border-stone-700 dark:bg-stone-900">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-base font-semibold text-stone-900 dark:text-stone-100">Your story so far</p>
+            <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">Look back on everything you&apos;ve shared, or celebrate how far you&apos;ve come.</p>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/app/memories" className="inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
+              Memories
+            </Link>
+            <Link href="/app/milestones" className="inline-flex min-h-11 items-center rounded-xl px-3 py-2 text-sm font-semibold btn-accent transition">
+              Milestones
+            </Link>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
@@ -155,18 +231,22 @@ function Card({ title, subtitle, children }: { title: string; subtitle?: string;
 
 function StatusBadge({ state }: { state: SessionState }) {
   const style =
-    state === "unlocked"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-      : state === "waiting"
-        ? "border-amber-200 bg-amber-50 text-amber-800"
-        : "border-stone-200 bg-stone-100 text-stone-700 dark:border-stone-600 dark:bg-stone-700 dark:text-stone-200";
+    state === "waiting"
+      ? "border-amber-200 bg-amber-50 text-amber-800"
+      : "border-stone-300 bg-stone-100 text-stone-700 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200";
+
+  if (state === "unlocked") {
+    return (
+      <p className="btn-accent inline-flex rounded-full border border-transparent px-2.5 py-1 text-xs font-semibold">
+        you’re both here
+      </p>
+    );
+  }
 
   const label =
-    state === "unlocked"
-      ? "you’re both here"
-      : state === "waiting"
-        ? "waiting for your person"
-        : "your note is ready";
+    state === "waiting"
+      ? "waiting for your person"
+      : "your note is ready";
 
   return <p className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${style}`}>{label}</p>;
 }

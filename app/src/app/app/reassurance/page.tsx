@@ -39,7 +39,7 @@ export default async function ReassurancePage() {
       <div className="grid gap-4 md:grid-cols-2">
         <form action={requestReassuranceAction} className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
           <p className="text-sm text-stone-600 dark:text-stone-300">Need a little extra care right now?</p>
-          <button className="mt-3 min-h-11 w-full rounded-xl bg-stone-900 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800 active:scale-[0.99] dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200">Ask for care</button>
+          <button className="btn-accent mt-3 min-h-11 w-full rounded-xl px-3 py-2.5 text-sm font-semibold transition active:scale-[0.99]">Ask for care</button>
         </form>
 
         <form action={sendReassuranceMessageAction} className="space-y-2 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">

@@ -9,7 +9,7 @@ export default async function WeeklyPage() {
   if (!user || !couple) return <p>Set up your couple first.</p>;
 
   const session = await ensureWeeklySession(couple.id);
-  if (!session) return <p className="text-sm text-stone-600">Weekly content is not configured yet. Run `seed_week1.sql` and refresh.</p>;
+  if (!session) return <p className="text-sm text-stone-600">This week&apos;s check-in is being prepared. Check back soon!</p>;
 
   const partnerId = await getPartnerId(couple, user.id);
 

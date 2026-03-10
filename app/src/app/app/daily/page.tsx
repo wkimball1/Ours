@@ -10,7 +10,7 @@ export default async function DailyPage() {
   if (!user || !couple) return <p>Set up your couple first.</p>;
 
   const session = await ensureDailySession(couple.id);
-  if (!session) return <p className="text-sm text-stone-600">Daily content is not configured yet. Run `seed_week1.sql` and refresh.</p>;
+  if (!session) return <p className="text-sm text-stone-600">Today&apos;s daily prompts are being prepared. Check back in a little while!</p>;
 
   const partnerId = await getPartnerId(couple, user.id);
 

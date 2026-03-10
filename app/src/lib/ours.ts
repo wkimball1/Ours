@@ -24,7 +24,13 @@ export async function ensureProfile() {
       id: user.id,
       first_name: user.user_metadata?.first_name ?? "",
       timezone: "America/New_York",
+      last_active_at: new Date().toISOString(),
     });
+  } else {
+    await supabase
+      .from("profiles")
+      .update({ last_active_at: new Date().toISOString() })
+      .eq("id", user.id);
   }
 
   return user;
