@@ -1,11 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMe, getMyCouple, getPartnerId } from "@/lib/ours";
+import { getMyData, getPartnerId } from "@/lib/ours";
 import { ThisOrThatGame } from "@/components/this-or-that-game";
 
 export default async function ThisOrThatPage() {
   const supabase = await createClient();
-  const user = await getMe();
-  const couple = await getMyCouple();
+  const { user, couple } = await getMyData();
 
   if (!user || !couple) return <p className="text-sm text-stone-600">Set up your couple first.</p>;
 
@@ -27,19 +26,12 @@ export default async function ThisOrThatPage() {
 
   const partnerId = getPartnerId(couple, user.id);
 
-  const { data: myAnswers } = await supabase
-    .from("this_or_that_answers")
-    .select("question_id, choice, guess")
-    .eq("couple_id", couple.id)
-    .eq("user_id", user.id);
-
-  const { data: partnerAnswers } = partnerId
-    ? await supabase
-        .from("this_or_that_answers")
-        .select("question_id, choice, guess")
-        .eq("couple_id", couple.id)
-        .eq("user_id", partnerId)
-    : { data: [] };
+  const [{ data: myAnswers }, { data: partnerAnswers }] = await Promise.all([
+    supabase.from("this_or_that_answers").select("question_id, choice, guess").eq("couple_id", couple.id).eq("user_id", user.id),
+    partnerId
+      ? supabase.from("this_or_that_answers").select("question_id, choice, guess").eq("couple_id", couple.id).eq("user_id", partnerId)
+      : Promise.resolve({ data: [] }),
+  ]);
 
   const myMap = Object.fromEntries((myAnswers ?? []).map((a) => [a.question_id, a.choice]));
   const myGuessMap = Object.fromEntries((myAnswers ?? []).filter((a) => a.guess).map((a) => [a.question_id, a.guess]));

@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await ensureProfile();
   const supabase = await createClient();
-  const couple = await getMyCouple();
+  const couple = user ? await getMyCouple(user.id) : null;
 
   let unreadNotes = 0;
   if (user && couple) {

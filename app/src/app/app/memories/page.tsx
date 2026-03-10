@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMe, getMyCouple, getPartnerId } from "@/lib/ours";
+import { getMyData, getPartnerId } from "@/lib/ours";
 
 interface TimelineItem {
   type: "session" | "drawing" | "game" | "note";
@@ -13,8 +13,7 @@ interface TimelineItem {
 
 export default async function MemoriesPage() {
   const supabase = await createClient();
-  const user = await getMe();
-  const couple = await getMyCouple();
+  const { user, couple } = await getMyData();
 
   if (!user || !couple) return <p className="text-sm text-stone-600">Set up your couple first.</p>;
 

@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { createCoupleAction, generateInviteAction } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
-import { ensureDailySession, ensureWeeklySession, getMe, getMyCouple, getPartnerId } from "@/lib/ours";
+import { ensureDailySession, ensureWeeklySession, getMyData, getPartnerId } from "@/lib/ours";
 import { InviteShare } from "@/components/invite-share";
-import { HeroCard } from "@/components/hero-card";
 
 function timeAgo(dateStr: string): string {
   const now = Date.now();
@@ -22,8 +21,7 @@ type SessionState = "not started" | "waiting" | "unlocked";
 
 export default async function AppHomePage() {
   const supabase = await createClient();
-  const user = await getMe();
-  const couple = await getMyCouple();
+  const { user, couple } = await getMyData();
 
   if (!couple || !user) {
     return (
@@ -89,18 +87,18 @@ export default async function AppHomePage() {
 
   return (
     <section className="grid gap-4 sm:gap-5 md:grid-cols-2">
-      <HeroCard>
+      <div className="hero-card rounded-3xl border border-white/10 p-6 text-white md:col-span-2 sm:p-7">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.6)" }}>Today</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Today</p>
           {partnerPresence?.last_active_at && (
             <p className={`text-xs font-medium ${timeAgo(partnerPresence.last_active_at) === "Active now" ? "text-emerald-300" : "text-stone-400"}`}>
               {partnerPresence.first_name ? `${partnerPresence.first_name}: ` : ""}{timeAgo(partnerPresence.last_active_at)}
             </p>
           )}
         </div>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl" style={{ color: "#ffffff" }}>A tiny moment for us</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.8)" }}>One honest minute can shift the whole day. No pressure, just connection.</p>
-      </HeroCard>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">A tiny moment for us</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/80">One honest minute can shift the whole day. No pressure, just connection.</p>
+      </div>
 
       {!couple.member2 && (
         <div className="space-y-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm md:col-span-2 dark:border-stone-700 dark:bg-stone-900">

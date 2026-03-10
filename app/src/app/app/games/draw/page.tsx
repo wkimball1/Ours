@@ -1,11 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMe, getMyCouple, getPartnerId, getDayOfYear } from "@/lib/ours";
+import { getMyData, getPartnerId, getDayOfYear } from "@/lib/ours";
 import { DrawingCanvas } from "@/components/drawing-canvas";
 
 export default async function DrawPage() {
   const supabase = await createClient();
-  const user = await getMe();
-  const couple = await getMyCouple();
+  const { user, couple } = await getMyData();
 
   if (!user || !couple) return <p className="text-sm text-stone-600">Set up your couple first.</p>;
 
@@ -30,23 +29,12 @@ export default async function DrawPage() {
   const todaysPrompt = prompts[(dayOfYear - 1) % prompts.length];
   const partnerId = getPartnerId(couple, user.id);
 
-  const { data: myDrawing } = await supabase
-    .from("drawings")
-    .select("drawing_data")
-    .eq("couple_id", couple.id)
-    .eq("user_id", user.id)
-    .eq("session_date", today)
-    .maybeSingle();
-
-  const { data: partnerDrawing } = partnerId
-    ? await supabase
-        .from("drawings")
-        .select("drawing_data")
-        .eq("couple_id", couple.id)
-        .eq("user_id", partnerId)
-        .eq("session_date", today)
-        .maybeSingle()
-    : { data: null };
+  const [{ data: myDrawing }, { data: partnerDrawing }] = await Promise.all([
+    supabase.from("drawings").select("drawing_data").eq("couple_id", couple.id).eq("user_id", user.id).eq("session_date", today).maybeSingle(),
+    partnerId
+      ? supabase.from("drawings").select("drawing_data").eq("couple_id", couple.id).eq("user_id", partnerId).eq("session_date", today).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
 
   const bothDone = !!myDrawing && !!partnerDrawing;
 

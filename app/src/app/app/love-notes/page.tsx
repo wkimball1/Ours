@@ -1,11 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMe, getMyCouple } from "@/lib/ours";
+import { getMyData } from "@/lib/ours";
 import { sendLoveNoteAction, markNoteReadAction } from "@/app/actions";
 
 export default async function LoveNotesPage() {
   const supabase = await createClient();
-  const user = await getMe();
-  const couple = await getMyCouple();
+  const { user, couple } = await getMyData();
 
   if (!user || !couple) return <p className="text-sm text-stone-600">Set up your couple first.</p>;
 

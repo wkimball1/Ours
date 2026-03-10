@@ -1,6 +1,6 @@
 import { saveSettingsAction, changePasswordAction, deleteAccountAction } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
-import { getMe, getMyCouple } from "@/lib/ours";
+import { getMyData } from "@/lib/ours";
 import { ThemePicker } from "@/components/theme-picker";
 
 const tzSuggestions = [
@@ -17,8 +17,7 @@ export default async function SettingsPage({
   searchParams: Promise<{ error?: string; success?: string }>;
 }) {
   const supabase = await createClient();
-  const user = await getMe();
-  const couple = await getMyCouple();
+  const { user, couple } = await getMyData();
   if (!user) return <p>Sign in first.</p>;
 
   const params = await searchParams;

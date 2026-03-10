@@ -27,28 +27,46 @@ export async function ensureProfile() {
       last_active_at: new Date().toISOString(),
     });
   } else {
-    await supabase
-      .from("profiles")
-      .update({ last_active_at: new Date().toISOString() })
-      .eq("id", user.id);
+    const lastActive = profile.last_active_at ? new Date(profile.last_active_at).getTime() : 0;
+    if (Date.now() - lastActive > 5 * 60 * 1000) {
+      await supabase
+        .from("profiles")
+        .update({ last_active_at: new Date().toISOString() })
+        .eq("id", user.id);
+    }
   }
 
   return user;
 }
 
-export async function getMyCouple() {
+export async function getMyCouple(userId?: string) {
   const supabase = await createClient();
-  const user = await getMe();
-  if (!user) return null;
+  const id = userId ?? (await getMe())?.id;
+  if (!id) return null;
 
   const { data } = await supabase
+    .from("couples")
+    .select("*")
+    .or(`member1.eq.${id},member2.eq.${id}`)
+    .limit(1)
+    .maybeSingle();
+
+  return data;
+}
+
+export async function getMyData() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { user: null, couple: null };
+
+  const { data: couple } = await supabase
     .from("couples")
     .select("*")
     .or(`member1.eq.${user.id},member2.eq.${user.id}`)
     .limit(1)
     .maybeSingle();
 
-  return data;
+  return { user, couple };
 }
 
 export function getDayOfYear(): number {

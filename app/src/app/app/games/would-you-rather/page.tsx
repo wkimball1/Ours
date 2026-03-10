@@ -1,11 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMe, getMyCouple, getPartnerId, getDayOfYear } from "@/lib/ours";
+import { getMyData, getPartnerId, getDayOfYear } from "@/lib/ours";
 import { WouldYouRatherCard } from "@/components/would-you-rather-card";
 
 export default async function WouldYouRatherPage() {
   const supabase = await createClient();
-  const user = await getMe();
-  const couple = await getMyCouple();
+  const { user, couple } = await getMyData();
 
   if (!user || !couple) return <p className="text-sm text-stone-600">Set up your couple first.</p>;
 
@@ -29,23 +28,12 @@ export default async function WouldYouRatherPage() {
   const todaysQuestion = questions[(dayOfYear - 1) % questions.length];
   const partnerId = getPartnerId(couple, user.id);
 
-  const { data: myAnswer } = await supabase
-    .from("would_you_rather_answers")
-    .select("choice, guess")
-    .eq("couple_id", couple.id)
-    .eq("user_id", user.id)
-    .eq("question_id", todaysQuestion.id)
-    .maybeSingle();
-
-  const { data: partnerAnswer } = partnerId
-    ? await supabase
-        .from("would_you_rather_answers")
-        .select("choice, guess")
-        .eq("couple_id", couple.id)
-        .eq("user_id", partnerId)
-        .eq("question_id", todaysQuestion.id)
-        .maybeSingle()
-    : { data: null };
+  const [{ data: myAnswer }, { data: partnerAnswer }] = await Promise.all([
+    supabase.from("would_you_rather_answers").select("choice, guess").eq("couple_id", couple.id).eq("user_id", user.id).eq("question_id", todaysQuestion.id).maybeSingle(),
+    partnerId
+      ? supabase.from("would_you_rather_answers").select("choice, guess").eq("couple_id", couple.id).eq("user_id", partnerId).eq("question_id", todaysQuestion.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
 
   return (
     <section className="space-y-5">
