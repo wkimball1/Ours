@@ -398,7 +398,7 @@ export async function sendLoveNoteAction(formData: FormData) {
   const message = String(formData.get("message") || "").trim();
   if (!message || message.length > 2000) return;
 
-  const toUserId = couple.member1 === user.id ? couple.member2 : couple.member1;
+  const toUserId = getPartnerId(couple, user.id)!;
 
   await supabase.from("love_notes").insert({
     couple_id: couple.id,

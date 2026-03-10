@@ -102,6 +102,8 @@ const mobileMoreHref = "/app/more";
 export function AppShell({ children, unreadNotes = 0 }: { children: React.ReactNode; unreadNotes?: number }) {
   const pathname = usePathname();
 
+  const moreActive = isActive(pathname, mobileMoreHref) || ["/app/love-notes", "/app/journal", "/app/memories", "/app/milestones", "/app/reassurance", "/app/settings"].some((h) => isActive(pathname, h));
+
   return (
     <main className="mx-auto max-w-5xl px-4 pb-24 pt-6 sm:px-6 sm:pb-10 sm:pt-8">
       <header className="mb-6 rounded-3xl border border-stone-200/80 bg-white/90 p-5 shadow-sm backdrop-blur sm:mb-8 sm:p-6 dark:border-stone-700 dark:bg-stone-900/80">
@@ -165,25 +167,20 @@ export function AppShell({ children, unreadNotes = 0 }: { children: React.ReactN
               </Link>
             );
           })}
-          {(() => {
-            const active = isActive(pathname, mobileMoreHref) || ["/app/love-notes", "/app/journal", "/app/memories", "/app/milestones", "/app/reassurance", "/app/settings"].some((h) => isActive(pathname, h));
-            return (
-              <Link
-                href={mobileMoreHref}
-                aria-current={active ? "page" : undefined}
-                className={`relative min-h-11 rounded-xl px-2 py-2 text-center text-xs font-semibold transition active:scale-[0.98] ${
-                  active
-                    ? "btn-accent"
-                    : "text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
-                }`}
-              >
-                More
-                {unreadNotes > 0 && (
-                  <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
-                )}
-              </Link>
-            );
-          })()}
+          <Link
+            href={mobileMoreHref}
+            aria-current={moreActive ? "page" : undefined}
+            className={`relative min-h-11 rounded-xl px-2 py-2 text-center text-xs font-semibold transition active:scale-[0.98] ${
+              moreActive
+                ? "btn-accent"
+                : "text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+            }`}
+          >
+            More
+            {unreadNotes > 0 && (
+              <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
+            )}
+          </Link>
         </div>
       </nav>
     </main>

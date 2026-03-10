@@ -16,26 +16,23 @@ export default async function MilestonesPage() {
 
   if (!user || !couple) return <p className="text-sm text-stone-600">Set up your couple first.</p>;
 
-  const { count: unlockedSessions } = await supabase
-    .from("sessions")
-    .select("*", { count: "exact", head: true })
-    .eq("couple_id", couple.id)
-    .eq("status", "unlocked");
-
-  const { count: totalNotes } = await supabase
-    .from("love_notes")
-    .select("*", { count: "exact", head: true })
-    .eq("couple_id", couple.id);
-
-  const { count: totalDrawings } = await supabase
-    .from("drawings")
-    .select("*", { count: "exact", head: true })
-    .eq("couple_id", couple.id);
-
-  const { data: wyrAnswers } = await supabase
-    .from("would_you_rather_answers")
-    .select("question_id, user_id")
-    .eq("couple_id", couple.id);
+  const [
+    { count: unlockedSessions },
+    { count: totalNotes },
+    { count: totalDrawings },
+    { data: wyrAnswers },
+    { data: totAnswers },
+    { count: journalCount },
+    { count: moodCount },
+  ] = await Promise.all([
+    supabase.from("sessions").select("*", { count: "exact", head: true }).eq("couple_id", couple.id).eq("status", "unlocked"),
+    supabase.from("love_notes").select("*", { count: "exact", head: true }).eq("couple_id", couple.id),
+    supabase.from("drawings").select("*", { count: "exact", head: true }).eq("couple_id", couple.id),
+    supabase.from("would_you_rather_answers").select("question_id, user_id").eq("couple_id", couple.id),
+    supabase.from("this_or_that_answers").select("question_id, user_id").eq("couple_id", couple.id),
+    supabase.from("journal_entries").select("*", { count: "exact", head: true }).eq("couple_id", couple.id),
+    supabase.from("moods").select("*", { count: "exact", head: true }).eq("couple_id", couple.id),
+  ]);
 
   const wyrQuestions = new Set<string>();
   const wyrByQ: Record<string, Set<string>> = {};
@@ -45,11 +42,6 @@ export default async function MilestonesPage() {
     if (wyrByQ[a.question_id].size >= 2) wyrQuestions.add(a.question_id);
   }
 
-  const { data: totAnswers } = await supabase
-    .from("this_or_that_answers")
-    .select("question_id, user_id")
-    .eq("couple_id", couple.id);
-
   const totQuestions = new Set<string>();
   const totByQ: Record<string, Set<string>> = {};
   for (const a of totAnswers ?? []) {
@@ -57,16 +49,6 @@ export default async function MilestonesPage() {
     totByQ[a.question_id].add(a.user_id);
     if (totByQ[a.question_id].size >= 2) totQuestions.add(a.question_id);
   }
-
-  const { count: journalCount } = await supabase
-    .from("journal_entries")
-    .select("*", { count: "exact", head: true })
-    .eq("couple_id", couple.id);
-
-  const { count: moodCount } = await supabase
-    .from("moods")
-    .select("*", { count: "exact", head: true })
-    .eq("couple_id", couple.id);
 
   const sharedMoments = unlockedSessions ?? 0;
   const notes = totalNotes ?? 0;
@@ -176,7 +158,7 @@ export default async function MilestonesPage() {
         <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">A celebration of everything you&apos;ve built together. No pressure — just appreciation.</p>
       </div>
 
-      <div className="rounded-2xl bg-gradient-to-br from-stone-950 via-slate-900 to-slate-700 p-6 text-white shadow-lg">
+      <div className="hero-card rounded-2xl p-6 text-white shadow-lg">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-300">Your journey</p>
         <p className="mt-2 text-3xl font-bold">{achievedCount} of {milestones.length}</p>
         <p className="mt-1 text-sm text-stone-200">milestones unlocked</p>

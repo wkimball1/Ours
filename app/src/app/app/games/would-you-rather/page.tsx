@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMe, getMyCouple, getPartnerId } from "@/lib/ours";
+import { getMe, getMyCouple, getPartnerId, getDayOfYear } from "@/lib/ours";
 import { WouldYouRatherCard } from "@/components/would-you-rather-card";
 
 export default async function WouldYouRatherPage() {
@@ -9,7 +9,7 @@ export default async function WouldYouRatherPage() {
 
   if (!user || !couple) return <p className="text-sm text-stone-600">Set up your couple first.</p>;
 
-  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+  const dayOfYear = getDayOfYear();
 
   const { data: questions } = await supabase
     .from("would_you_rather_questions")
@@ -27,7 +27,7 @@ export default async function WouldYouRatherPage() {
   }
 
   const todaysQuestion = questions[(dayOfYear - 1) % questions.length];
-  const partnerId = await getPartnerId(couple, user.id);
+  const partnerId = getPartnerId(couple, user.id);
 
   const { data: myAnswer } = await supabase
     .from("would_you_rather_answers")

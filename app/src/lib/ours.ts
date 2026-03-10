@@ -51,6 +51,10 @@ export async function getMyCouple() {
   return data;
 }
 
+export function getDayOfYear(): number {
+  return Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+}
+
 export function getPartnerId(couple: { member1: string; member2: string | null }, userId: string) {
   if (!couple.member2) return null;
   return couple.member1 === userId ? couple.member2 : couple.member1;

@@ -1,11 +1,10 @@
 import { AppShell } from "@/components/app-shell";
-import { ensureProfile, getMe, getMyCouple } from "@/lib/ours";
+import { ensureProfile, getMyCouple } from "@/lib/ours";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  await ensureProfile();
+  const user = await ensureProfile();
   const supabase = await createClient();
-  const user = await getMe();
   const couple = await getMyCouple();
 
   let unreadNotes = 0;

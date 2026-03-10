@@ -25,7 +25,7 @@ export default async function ThisOrThatPage() {
     );
   }
 
-  const partnerId = await getPartnerId(couple, user.id);
+  const partnerId = getPartnerId(couple, user.id);
 
   const { data: myAnswers } = await supabase
     .from("this_or_that_answers")

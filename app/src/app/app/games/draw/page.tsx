@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMe, getMyCouple, getPartnerId } from "@/lib/ours";
+import { getMe, getMyCouple, getPartnerId, getDayOfYear } from "@/lib/ours";
 import { DrawingCanvas } from "@/components/drawing-canvas";
 
 export default async function DrawPage() {
@@ -10,7 +10,7 @@ export default async function DrawPage() {
   if (!user || !couple) return <p className="text-sm text-stone-600">Set up your couple first.</p>;
 
   const today = new Date().toISOString().slice(0, 10);
-  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+  const dayOfYear = getDayOfYear();
 
   const { data: prompts } = await supabase
     .from("drawing_prompts")
@@ -28,7 +28,7 @@ export default async function DrawPage() {
   }
 
   const todaysPrompt = prompts[(dayOfYear - 1) % prompts.length];
-  const partnerId = await getPartnerId(couple, user.id);
+  const partnerId = getPartnerId(couple, user.id);
 
   const { data: myDrawing } = await supabase
     .from("drawings")

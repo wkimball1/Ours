@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMe, getMyCouple } from "@/lib/ours";
+import { getMe, getMyCouple, getPartnerId } from "@/lib/ours";
 
 interface TimelineItem {
   type: "session" | "drawing" | "game" | "note";
@@ -38,24 +38,15 @@ export default async function MemoriesPage() {
     });
   }
 
-  const partnerId = couple.member1 === user.id ? couple.member2 : couple.member1;
+  const partnerId = getPartnerId(couple, user.id);
 
   if (partnerId) {
-    const { data: myDrawings } = await supabase
-      .from("drawings")
-      .select("session_date, drawing_data, created_at")
-      .eq("couple_id", couple.id)
-      .eq("user_id", user.id)
-      .order("session_date", { ascending: false })
-      .limit(20);
-
-    const { data: partnerDrawings } = await supabase
-      .from("drawings")
-      .select("session_date, drawing_data")
-      .eq("couple_id", couple.id)
-      .eq("user_id", partnerId)
-      .order("session_date", { ascending: false })
-      .limit(20);
+    const [{ data: myDrawings }, { data: partnerDrawings }, { data: wyrAnswers }, { data: totAnswers }] = await Promise.all([
+      supabase.from("drawings").select("session_date, drawing_data, created_at").eq("couple_id", couple.id).eq("user_id", user.id).order("session_date", { ascending: false }).limit(20),
+      supabase.from("drawings").select("session_date, drawing_data").eq("couple_id", couple.id).eq("user_id", partnerId).order("session_date", { ascending: false }).limit(20),
+      supabase.from("would_you_rather_answers").select("question_id, choice, created_at, user_id").eq("couple_id", couple.id).order("created_at", { ascending: false }).limit(60),
+      supabase.from("this_or_that_answers").select("question_id, choice, created_at, user_id").eq("couple_id", couple.id).order("created_at", { ascending: false }).limit(60),
+    ]);
 
     const partnerDrawingMap = Object.fromEntries(
       (partnerDrawings ?? []).map((d) => [d.session_date, d.drawing_data])
@@ -72,13 +63,6 @@ export default async function MemoriesPage() {
         });
       }
     }
-
-    const { data: wyrAnswers } = await supabase
-      .from("would_you_rather_answers")
-      .select("question_id, choice, created_at, user_id")
-      .eq("couple_id", couple.id)
-      .order("created_at", { ascending: false })
-      .limit(60);
 
     const wyrByQ: Record<string, { mine?: string; theirs?: string; date: string }> = {};
     for (const a of wyrAnswers ?? []) {
@@ -98,13 +82,6 @@ export default async function MemoriesPage() {
         });
       }
     }
-
-    const { data: totAnswers } = await supabase
-      .from("this_or_that_answers")
-      .select("question_id, choice, created_at, user_id")
-      .eq("couple_id", couple.id)
-      .order("created_at", { ascending: false })
-      .limit(60);
 
     const totByQ: Record<string, { mine?: string; theirs?: string; date: string }> = {};
     for (const a of totAnswers ?? []) {
@@ -126,12 +103,7 @@ export default async function MemoriesPage() {
     }
   }
 
-  const { data: notes } = await supabase
-    .from("love_notes")
-    .select("message, created_at, from_user_id")
-    .eq("couple_id", couple.id)
-    .order("created_at", { ascending: false })
-    .limit(20);
+  const { data: notes } = await supabase.from("love_notes").select("message, created_at, from_user_id").eq("couple_id", couple.id).order("created_at", { ascending: false }).limit(20);
 
   for (const n of notes ?? []) {
     timeline.push({
