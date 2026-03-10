@@ -321,3 +321,188 @@ export async function joinChallengeWaitlistAction(formData: FormData): Promise<v
   await trackEvent("waitlist_joined", { ...attribution, partner_email_provided: Boolean(partnerEmail) });
   redirect("/challenge?success=1");
 }
+
+export async function answerWouldYouRatherAction(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getMe();
+  const couple = await getMyCouple();
+  if (!user || !couple) return;
+
+  const questionId = String(formData.get("question_id") || "");
+  const choice = String(formData.get("choice") || "");
+  const guess = String(formData.get("guess") || "");
+  if (!questionId || !["a", "b"].includes(choice)) return;
+
+  const row: Record<string, string> = { couple_id: couple.id, user_id: user.id, question_id: questionId, choice };
+  if (["a", "b"].includes(guess)) row.guess = guess;
+
+  await supabase.from("would_you_rather_answers").upsert(
+    row,
+    { onConflict: "couple_id,user_id,question_id" }
+  );
+
+  revalidatePath("/app/games/would-you-rather");
+}
+
+export async function saveDrawingAction(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getMe();
+  const couple = await getMyCouple();
+  if (!user || !couple) return;
+
+  const promptId = String(formData.get("prompt_id") || "");
+  const drawingData = String(formData.get("drawing_data") || "");
+  if (!promptId || !drawingData) return;
+
+  const MAX_DRAWING_SIZE = 500_000;
+  if (!drawingData.startsWith("data:image/png;base64,") || drawingData.length > MAX_DRAWING_SIZE) return;
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  await supabase.from("drawings").upsert(
+    { couple_id: couple.id, user_id: user.id, prompt_id: promptId, drawing_data: drawingData, session_date: today },
+    { onConflict: "couple_id,user_id,session_date" }
+  );
+
+  revalidatePath("/app/games/draw");
+}
+
+export async function answerThisOrThatAction(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getMe();
+  const couple = await getMyCouple();
+  if (!user || !couple) return;
+
+  const questionId = String(formData.get("question_id") || "");
+  const choice = String(formData.get("choice") || "");
+  const guess = String(formData.get("guess") || "");
+  if (!questionId || !["a", "b"].includes(choice)) return;
+
+  const row: Record<string, string> = { couple_id: couple.id, user_id: user.id, question_id: questionId, choice };
+  if (["a", "b"].includes(guess)) row.guess = guess;
+
+  await supabase.from("this_or_that_answers").upsert(
+    row,
+    { onConflict: "couple_id,user_id,question_id" }
+  );
+
+  revalidatePath("/app/games/this-or-that");
+}
+
+export async function sendLoveNoteAction(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getMe();
+  const couple = await getMyCouple();
+  if (!user || !couple?.member2) return;
+
+  const message = String(formData.get("message") || "").trim();
+  if (!message || message.length > 2000) return;
+
+  const toUserId = couple.member1 === user.id ? couple.member2 : couple.member1;
+
+  await supabase.from("love_notes").insert({
+    couple_id: couple.id,
+    from_user_id: user.id,
+    to_user_id: toUserId,
+    message,
+  });
+
+  await trackEvent("love_note_sent");
+  revalidatePath("/app/love-notes");
+}
+
+export async function markNoteReadAction(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getMe();
+  if (!user) return;
+
+  const noteId = String(formData.get("note_id") || "");
+  if (!noteId) return;
+
+  await supabase.from("love_notes").update({ read_at: new Date().toISOString() }).eq("id", noteId).eq("to_user_id", user.id);
+  revalidatePath("/app/love-notes");
+}
+
+export async function saveJournalEntryAction(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getMe();
+  const couple = await getMyCouple();
+  if (!user || !couple) return;
+
+  const content = String(formData.get("content") || "").trim();
+  if (!content || content.length > 5000) return;
+
+  await supabase.from("journal_entries").insert({
+    couple_id: couple.id,
+    user_id: user.id,
+    content,
+  });
+
+  await trackEvent("journal_entry_created");
+  revalidatePath("/app/journal");
+}
+
+export async function deleteJournalEntryAction(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getMe();
+  if (!user) return;
+
+  const entryId = String(formData.get("entry_id") || "");
+  if (!entryId) return;
+
+  await supabase
+    .from("journal_entries")
+    .delete()
+    .eq("id", entryId)
+    .eq("user_id", user.id);
+
+  revalidatePath("/app/journal");
+}
+
+export async function changePasswordAction(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getMe();
+  if (!user) return redirect("/login");
+
+  const newPassword = String(formData.get("new_password") || "");
+  const confirmPassword = String(formData.get("confirm_password") || "");
+
+  if (!newPassword || newPassword.length < 6) {
+    return redirect("/app/settings?error=Password+must+be+at+least+6+characters");
+  }
+  if (newPassword !== confirmPassword) {
+    return redirect("/app/settings?error=Passwords+do+not+match");
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) {
+    return redirect(`/app/settings?error=${encodeURIComponent(error.message)}`);
+  }
+
+  redirect("/app/settings?success=password");
+}
+
+export async function deleteAccountAction() {
+  const supabase = await createClient();
+  const user = await getMe();
+  if (!user) return redirect("/login");
+
+  await supabase
+    .from("profiles")
+    .update({ first_name: "[deleted]", timezone: "UTC", last_active_at: null })
+    .eq("id", user.id);
+
+  const couple = await getMyCouple();
+  if (couple) {
+    if (couple.member1 === user.id && couple.member2) {
+      await supabase.from("couples").update({ member1: couple.member2, member2: null }).eq("id", couple.id);
+    } else if (couple.member2 === user.id) {
+      await supabase.from("couples").update({ member2: null }).eq("id", couple.id);
+    } else {
+      await supabase.from("couples").delete().eq("id", couple.id);
+    }
+  }
+
+  await supabase.auth.signOut();
+  redirect("/");
+}

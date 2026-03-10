@@ -1,6 +1,7 @@
-import { saveSettingsAction } from "@/app/actions";
+import { saveSettingsAction, changePasswordAction, deleteAccountAction } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
 import { getMe, getMyCouple } from "@/lib/ours";
+import { ThemePicker } from "@/components/theme-picker";
 
 const tzSuggestions = [
   "America/New_York",
@@ -10,12 +11,17 @@ const tzSuggestions = [
   "UTC",
 ];
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; success?: string }>;
+}) {
   const supabase = await createClient();
   const user = await getMe();
   const couple = await getMyCouple();
   if (!user) return <p>Sign in first.</p>;
 
+  const params = await searchParams;
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
 
   return (
@@ -24,6 +30,19 @@ export default async function SettingsPage() {
         <h2 className="text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Settings</h2>
         <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">Keep this simple: your name/timezone for daily timing, and optional relationship dates for context.</p>
       </div>
+
+      {params.error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
+          {params.error}
+        </div>
+      )}
+      {params.success === "password" && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+          Password updated successfully.
+        </div>
+      )}
+
+      <ThemePicker />
 
       <form action={saveSettingsAction} className="space-y-4">
         <div className="space-y-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
@@ -83,10 +102,54 @@ export default async function SettingsPage() {
           </label>
         </div>
 
-        <button className="min-h-11 rounded-xl bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200">
+        <button className="min-h-11 rounded-xl px-4 py-2.5 text-sm font-semibold btn-accent transition">
           Save settings
         </button>
       </form>
+
+      <form action={changePasswordAction} className="space-y-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+        <h3 className="text-base font-semibold text-stone-900 dark:text-stone-100">Change password</h3>
+        <label className="block space-y-1.5">
+          <span className="text-sm font-medium text-stone-800 dark:text-stone-200">New password</span>
+          <input
+            name="new_password"
+            type="password"
+            required
+            minLength={6}
+            placeholder="At least 6 characters"
+            autoComplete="new-password"
+            className="w-full rounded-lg border px-3 py-2.5 text-[16px]"
+          />
+        </label>
+        <label className="block space-y-1.5">
+          <span className="text-sm font-medium text-stone-800 dark:text-stone-200">Confirm new password</span>
+          <input
+            name="confirm_password"
+            type="password"
+            required
+            minLength={6}
+            placeholder="Type it again"
+            autoComplete="new-password"
+            className="w-full rounded-lg border px-3 py-2.5 text-[16px]"
+          />
+        </label>
+        <button className="min-h-11 rounded-xl px-4 py-2.5 text-sm font-semibold btn-accent transition">
+          Update password
+        </button>
+      </form>
+
+      <div className="space-y-3 rounded-2xl border border-red-200 bg-white p-5 shadow-sm dark:border-red-800 dark:bg-stone-900">
+        <h3 className="text-base font-semibold text-red-700 dark:text-red-400">Delete account</h3>
+        <p className="text-sm text-stone-600 dark:text-stone-300">This will remove your profile and unlink you from your shared space. Your partner will keep access to shared memories and content.</p>
+        <form action={deleteAccountAction}>
+          <button
+            type="submit"
+            className="min-h-11 rounded-xl border border-red-300 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 dark:border-red-700 dark:bg-stone-800 dark:text-red-400 dark:hover:bg-red-950"
+          >
+            Delete my account
+          </button>
+        </form>
+      </div>
     </section>
   );
 }

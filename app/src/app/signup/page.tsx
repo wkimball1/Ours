@@ -22,7 +22,7 @@ export default async function SignupPage({
   return (
     <main className="mx-auto max-w-md px-5 py-10 sm:py-16">
       <div className="rounded-3xl border border-stone-200/80 bg-white/95 p-6 shadow-sm backdrop-blur sm:p-8 dark:border-stone-700 dark:bg-stone-900/85">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">Start together</p>
+        <p className="text-accent text-xs font-semibold uppercase tracking-[0.2em]">Start together</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Create your Ours space.</h1>
         <p className="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-300">No pressure and no rush — just a warm place for both of you to check in.</p>
 
@@ -49,7 +49,7 @@ export default async function SignupPage({
             <label htmlFor="password" className="text-sm font-medium text-stone-700 dark:text-stone-200">Password</label>
             <input id="password" name="password" type="password" required autoComplete="new-password" placeholder="Create a password" className="w-full px-3 py-2.5" />
           </div>
-          <button className="min-h-11 w-full rounded-xl bg-stone-900 p-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-stone-800 active:scale-[0.99] dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200">Create account</button>
+          <button className="btn-accent min-h-11 w-full rounded-xl p-2.5 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 active:scale-[0.99]">Create account</button>
         </form>
 
         <p className="mt-5 text-sm text-stone-600 dark:text-stone-300">

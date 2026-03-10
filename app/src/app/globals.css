@@ -16,6 +16,19 @@
   --danger-bg: #fff0f0;
   --danger-fg: #8f2020;
   color-scheme: light dark;
+
+  --accent: #57534e;
+  --accent-hover: #44403c;
+  --accent-soft: #f5f5f4;
+  --accent-dark: #1c1917;
+  --accent-fg: #ffffff;
+  --accent-border: #a8a29e;
+  --hero-from: #0c0a09;
+  --hero-via: #1c1917;
+  --hero-to: #292524;
+  --bg-glow-1: #ffffff;
+  --bg-glow-2: #f6f2ea;
+  --bg-glow-3: #eef5ff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -28,7 +41,150 @@
     --ring: #93a7c2;
     --brand: #c8d8f2;
     --brand-soft: #1b2434;
+    --hero-from: #1e1e1e;
+    --hero-via: #2a2a2a;
+    --hero-to: #3a3a3a;
   }
+  [data-theme="rose"] {
+    --hero-from: #4c0519;
+    --hero-via: #881337;
+    --hero-to: #be123c;
+  }
+  [data-theme="lavender"] {
+    --hero-from: #2e1065;
+    --hero-via: #4c1d95;
+    --hero-to: #6d28d9;
+  }
+  [data-theme="ocean"] {
+    --hero-from: #082f49;
+    --hero-via: #0c4a6e;
+    --hero-to: #0369a1;
+  }
+  [data-theme="sunset"] {
+    --hero-from: #431407;
+    --hero-via: #7c2d12;
+    --hero-to: #c2410c;
+  }
+  [data-theme="forest"] {
+    --hero-from: #052e16;
+    --hero-via: #14532d;
+    --hero-to: #15803d;
+  }
+  [data-theme="berry"] {
+    --hero-from: #2e0533;
+    --hero-via: #4a044e;
+    --hero-to: #a21caf;
+  }
+  [data-theme="midnight"] {
+    --hero-from: #0c1a3d;
+    --hero-via: #172554;
+    --hero-to: #1e40af;
+  }
+}
+
+[data-theme="rose"] {
+  --accent: #e11d48;
+  --accent-hover: #be123c;
+  --accent-soft: #fff1f2;
+  --accent-dark: #9f1239;
+  --accent-fg: #ffffff;
+  --accent-border: #fda4af;
+  --hero-from: #4c0519;
+  --hero-via: #881337;
+  --hero-to: #be123c;
+  --bg-glow-1: #fff1f2;
+  --bg-glow-2: #fce7f3;
+  --bg-glow-3: #fdf2f8;
+}
+
+[data-theme="lavender"] {
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --accent-soft: #f5f3ff;
+  --accent-dark: #5b21b6;
+  --accent-fg: #ffffff;
+  --accent-border: #c4b5fd;
+  --hero-from: #1e0a4a;
+  --hero-via: #3b0764;
+  --hero-to: #5b21b6;
+  --bg-glow-1: #f5f3ff;
+  --bg-glow-2: #ede9fe;
+  --bg-glow-3: #faf5ff;
+}
+
+[data-theme="ocean"] {
+  --accent: #0369a1;
+  --accent-hover: #075985;
+  --accent-soft: #f0f9ff;
+  --accent-dark: #075985;
+  --accent-fg: #ffffff;
+  --accent-border: #7dd3fc;
+  --hero-from: #082f49;
+  --hero-via: #0c4a6e;
+  --hero-to: #075985;
+  --bg-glow-1: #f0f9ff;
+  --bg-glow-2: #e0f2fe;
+  --bg-glow-3: #ecfeff;
+}
+
+[data-theme="sunset"] {
+  --accent: #c2410c;
+  --accent-hover: #9a3412;
+  --accent-soft: #fff7ed;
+  --accent-dark: #9a3412;
+  --accent-fg: #ffffff;
+  --accent-border: #fdba74;
+  --hero-from: #431407;
+  --hero-via: #7c2d12;
+  --hero-to: #9a3412;
+  --bg-glow-1: #fff7ed;
+  --bg-glow-2: #fef3c7;
+  --bg-glow-3: #fffbeb;
+}
+
+[data-theme="forest"] {
+  --accent: #15803d;
+  --accent-hover: #166534;
+  --accent-soft: #f0fdf4;
+  --accent-dark: #166534;
+  --accent-fg: #ffffff;
+  --accent-border: #86efac;
+  --hero-from: #052e16;
+  --hero-via: #14532d;
+  --hero-to: #166534;
+  --bg-glow-1: #f0fdf4;
+  --bg-glow-2: #ecfdf5;
+  --bg-glow-3: #f0fdfa;
+}
+
+[data-theme="berry"] {
+  --accent: #c026d3;
+  --accent-hover: #a21caf;
+  --accent-soft: #fdf4ff;
+  --accent-dark: #86198f;
+  --accent-fg: #ffffff;
+  --accent-border: #e879f9;
+  --hero-from: #2e0533;
+  --hero-via: #4a044e;
+  --hero-to: #86198f;
+  --bg-glow-1: #fdf4ff;
+  --bg-glow-2: #fae8ff;
+  --bg-glow-3: #fef3ff;
+}
+
+[data-theme="midnight"] {
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-soft: #eff6ff;
+  --accent-dark: #1e3a5f;
+  --accent-fg: #ffffff;
+  --accent-border: #93c5fd;
+  --hero-from: #172554;
+  --hero-via: #1e3a5f;
+  --hero-to: #1e40af;
+  --bg-glow-1: #eff6ff;
+  --bg-glow-2: #dbeafe;
+  --bg-glow-3: #e0f2fe;
 }
 
 @theme inline {
@@ -40,8 +196,8 @@
 
 body {
   background:
-    radial-gradient(circle at 15% -15%, #ffffff 0, #f6f2ea 45%, transparent 70%),
-    radial-gradient(circle at 95% 10%, #eef5ff 0, transparent 42%),
+    radial-gradient(circle at 15% -15%, var(--bg-glow-1) 0, var(--bg-glow-2) 45%, transparent 70%),
+    radial-gradient(circle at 95% 10%, var(--bg-glow-3) 0, transparent 42%),
     var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
@@ -72,6 +228,81 @@ input::placeholder,
 textarea::placeholder {
   color: #6a7480;
   opacity: 1;
+}
+
+.hero-card {
+  background: linear-gradient(135deg, var(--hero-from) 0%, var(--hero-via) 50%, var(--hero-to) 100%) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+}
+
+.btn-accent {
+  background-color: #57534e !important;
+  color: #ffffff !important;
+  border-color: #57534e !important;
+}
+[data-theme="rose"] .btn-accent {
+  background-color: #e11d48 !important;
+  color: #ffffff !important;
+  border-color: #e11d48 !important;
+}
+[data-theme="lavender"] .btn-accent {
+  background-color: #7c3aed !important;
+  color: #ffffff !important;
+  border-color: #7c3aed !important;
+}
+[data-theme="ocean"] .btn-accent {
+  background-color: #0369a1 !important;
+  color: #ffffff !important;
+  border-color: #0369a1 !important;
+}
+[data-theme="sunset"] .btn-accent {
+  background-color: #c2410c !important;
+  color: #ffffff !important;
+  border-color: #c2410c !important;
+}
+[data-theme="forest"] .btn-accent {
+  background-color: #15803d !important;
+  color: #ffffff !important;
+  border-color: #15803d !important;
+}
+[data-theme="berry"] .btn-accent {
+  background-color: #c026d3 !important;
+  color: #ffffff !important;
+  border-color: #c026d3 !important;
+}
+[data-theme="midnight"] .btn-accent {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #2563eb !important;
+}
+
+.btn-accent:hover {
+  opacity: 0.9;
+}
+
+.text-accent {
+  color: #57534e !important;
+}
+[data-theme="rose"] .text-accent {
+  color: #e11d48 !important;
+}
+[data-theme="lavender"] .text-accent {
+  color: #7c3aed !important;
+}
+[data-theme="ocean"] .text-accent {
+  color: #0369a1 !important;
+}
+[data-theme="sunset"] .text-accent {
+  color: #c2410c !important;
+}
+[data-theme="forest"] .text-accent {
+  color: #15803d !important;
+}
+[data-theme="berry"] .text-accent {
+  color: #c026d3 !important;
+}
+[data-theme="midnight"] .text-accent {
+  color: #2563eb !important;
 }
 
 button,
