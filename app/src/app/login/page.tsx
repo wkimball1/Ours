@@ -50,6 +50,11 @@ export default async function LoginPage({
             <input id="password" name="password" type="password" required autoComplete="current-password" placeholder="Your password" className="w-full px-3 py-2.5" />
           </div>
           <button className="btn-accent min-h-11 w-full rounded-xl p-2.5 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 active:scale-[0.99]">Log in</button>
+          <div className="text-right">
+            <Link href="/forgot-password" className="text-xs text-stone-500 underline underline-offset-2 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200">
+              Forgot password?
+            </Link>
+          </div>
         </form>
 
         {magicLinksEnabled ? (

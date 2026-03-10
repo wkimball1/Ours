@@ -23,7 +23,7 @@ export async function ensureProfile() {
     await supabase.from("profiles").insert({
       id: user.id,
       first_name: user.user_metadata?.first_name ?? "",
-      timezone: "America/New_York",
+      timezone: user.user_metadata?.timezone ?? "America/New_York",
       last_active_at: new Date().toISOString(),
     });
   } else {
@@ -177,15 +177,16 @@ export async function ensureWeeklySession(coupleId: string) {
   return created;
 }
 
-export async function refreshSessionUnlock(sessionId: string, couple: { member1: string; member2: string | null }) {
-  if (!couple.member2) return;
+export async function refreshSessionUnlock(sessionId: string, couple: { member1: string; member2: string | null }): Promise<boolean> {
+  if (!couple.member2) return false;
   const supabase = await createClient();
   const { data: session } = await supabase
     .from("sessions")
-    .select("id, content_set_id")
+    .select("id, content_set_id, status, type")
     .eq("id", sessionId)
     .single();
-  if (!session) return;
+  if (!session) return false;
+  if (session.status === "unlocked") return false;
 
   const { data: promptRows } = await supabase
     .from("prompts")
@@ -193,7 +194,7 @@ export async function refreshSessionUnlock(sessionId: string, couple: { member1:
     .eq("content_set_id", session.content_set_id);
 
   const required = promptRows?.length ?? 0;
-  if (!required) return;
+  if (!required) return false;
 
   const [{ count: c1 }, { count: c2 }] = await Promise.all([
     supabase
@@ -210,5 +211,7 @@ export async function refreshSessionUnlock(sessionId: string, couple: { member1:
 
   if ((c1 ?? 0) >= required && (c2 ?? 0) >= required) {
     await supabase.from("sessions").update({ status: "unlocked" }).eq("id", sessionId);
+    return true;
   }
+  return false;
 }
