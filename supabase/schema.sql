@@ -5,8 +5,11 @@ create table if not exists profiles (
   id uuid primary key,
   first_name text,
   timezone text not null default 'America/New_York',
+  avatar_url text,
   created_at timestamptz not null default now()
 );
+
+-- Migration: alter table profiles add column if not exists avatar_url text;
 
 create table if not exists couples (
   id uuid primary key default gen_random_uuid(),

@@ -51,11 +51,11 @@ export default async function AppHomePage() {
 
   const partnerId = getPartnerId(couple, user.id);
 
-  let partnerPresence: { first_name: string; last_active_at: string | null } | null = null;
+  let partnerPresence: { first_name: string; last_active_at: string | null; avatar_url: string | null } | null = null;
   if (partnerId) {
     const { data: partnerProfile } = await supabase
       .from("profiles")
-      .select("first_name, last_active_at")
+      .select("first_name, last_active_at, avatar_url")
       .eq("id", partnerId)
       .single();
     partnerPresence = partnerProfile;
@@ -91,9 +91,17 @@ export default async function AppHomePage() {
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Today</p>
           {partnerPresence?.last_active_at && (
-            <p className={`text-xs font-medium ${timeAgo(partnerPresence.last_active_at) === "Active now" ? "text-emerald-300" : "text-stone-400"}`}>
-              {partnerPresence.first_name ? `${partnerPresence.first_name}: ` : ""}{timeAgo(partnerPresence.last_active_at)}
-            </p>
+            <div className="flex items-center gap-2">
+              {partnerPresence.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={partnerPresence.avatar_url} alt={partnerPresence.first_name ?? "Partner"} className="h-7 w-7 rounded-full object-cover ring-2 ring-white/30" />
+              ) : (
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-sm">🤍</div>
+              )}
+              <p className={`text-xs font-medium ${timeAgo(partnerPresence.last_active_at) === "Active now" ? "text-emerald-300" : "text-stone-400"}`}>
+                {partnerPresence.first_name ? `${partnerPresence.first_name}: ` : ""}{timeAgo(partnerPresence.last_active_at)}
+              </p>
+            </div>
           )}
         </div>
         <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">A tiny moment for us</h2>

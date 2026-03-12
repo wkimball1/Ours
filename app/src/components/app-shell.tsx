@@ -68,7 +68,7 @@ function UserMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-2xl border border-stone-200 bg-white py-2 shadow-lg dark:border-stone-700 dark:bg-stone-900">
+        <div className="absolute left-0 top-full z-50 mt-2 w-48 rounded-2xl border border-stone-200 bg-white py-2 shadow-lg sm:left-auto sm:right-0 dark:border-stone-700 dark:bg-stone-900">
           {menuItems.map((item) => {
             const active = isActive(pathname, item.href);
             return (
