@@ -23,35 +23,57 @@ export async function ensureProfile() {
     await supabase.from("profiles").insert({
       id: user.id,
       first_name: user.user_metadata?.first_name ?? "",
-      timezone: "America/New_York",
+      timezone: user.user_metadata?.timezone ?? "America/New_York",
       last_active_at: new Date().toISOString(),
     });
   } else {
-    await supabase
-      .from("profiles")
-      .update({ last_active_at: new Date().toISOString() })
-      .eq("id", user.id);
+    const lastActive = profile.last_active_at ? new Date(profile.last_active_at).getTime() : 0;
+    if (Date.now() - lastActive > 5 * 60 * 1000) {
+      await supabase
+        .from("profiles")
+        .update({ last_active_at: new Date().toISOString() })
+        .eq("id", user.id);
+    }
   }
 
   return user;
 }
 
-export async function getMyCouple() {
+export async function getMyCouple(userId?: string) {
   const supabase = await createClient();
-  const user = await getMe();
-  if (!user) return null;
+  const id = userId ?? (await getMe())?.id;
+  if (!id) return null;
 
   const { data } = await supabase
     .from("couples")
     .select("*")
-    .or(`member1.eq.${user.id},member2.eq.${user.id}`)
+    .or(`member1.eq.${id},member2.eq.${id}`)
     .limit(1)
     .maybeSingle();
 
   return data;
 }
 
-export async function getPartnerId(couple: { member1: string; member2: string | null }, userId: string) {
+export async function getMyData() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { user: null, couple: null };
+
+  const { data: couple } = await supabase
+    .from("couples")
+    .select("*")
+    .or(`member1.eq.${user.id},member2.eq.${user.id}`)
+    .limit(1)
+    .maybeSingle();
+
+  return { user, couple };
+}
+
+export function getDayOfYear(): number {
+  return Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+}
+
+export function getPartnerId(couple: { member1: string; member2: string | null }, userId: string) {
   if (!couple.member2) return null;
   return couple.member1 === userId ? couple.member2 : couple.member1;
 }
@@ -155,15 +177,16 @@ export async function ensureWeeklySession(coupleId: string) {
   return created;
 }
 
-export async function refreshSessionUnlock(sessionId: string, couple: { member1: string; member2: string | null }) {
-  if (!couple.member2) return;
+export async function refreshSessionUnlock(sessionId: string, couple: { member1: string; member2: string | null }): Promise<boolean> {
+  if (!couple.member2) return false;
   const supabase = await createClient();
   const { data: session } = await supabase
     .from("sessions")
-    .select("id, content_set_id")
+    .select("id, content_set_id, status, type")
     .eq("id", sessionId)
     .single();
-  if (!session) return;
+  if (!session) return false;
+  if (session.status === "unlocked") return false;
 
   const { data: promptRows } = await supabase
     .from("prompts")
@@ -171,21 +194,24 @@ export async function refreshSessionUnlock(sessionId: string, couple: { member1:
     .eq("content_set_id", session.content_set_id);
 
   const required = promptRows?.length ?? 0;
-  if (!required) return;
+  if (!required) return false;
 
-  const { count: c1 } = await supabase
-    .from("responses")
-    .select("*", { count: "exact", head: true })
-    .eq("session_id", sessionId)
-    .eq("user_id", couple.member1);
-
-  const { count: c2 } = await supabase
-    .from("responses")
-    .select("*", { count: "exact", head: true })
-    .eq("session_id", sessionId)
-    .eq("user_id", couple.member2);
+  const [{ count: c1 }, { count: c2 }] = await Promise.all([
+    supabase
+      .from("responses")
+      .select("*", { count: "exact", head: true })
+      .eq("session_id", sessionId)
+      .eq("user_id", couple.member1),
+    supabase
+      .from("responses")
+      .select("*", { count: "exact", head: true })
+      .eq("session_id", sessionId)
+      .eq("user_id", couple.member2),
+  ]);
 
   if ((c1 ?? 0) >= required && (c2 ?? 0) >= required) {
     await supabase.from("sessions").update({ status: "unlocked" }).eq("id", sessionId);
+    return true;
   }
+  return false;
 }

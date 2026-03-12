@@ -1,6 +1,6 @@
 import { requestReassuranceAction, saveMoodAction, sendReassuranceMessageAction } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
-import { getMe, getMyCouple } from "@/lib/ours";
+import { getMyData } from "@/lib/ours";
 
 const templates = [
   "I’m right here with you. We’ll move through this together.",
@@ -11,8 +11,7 @@ const templates = [
 
 export default async function ReassurancePage() {
   const supabase = await createClient();
-  const user = await getMe();
-  const couple = await getMyCouple();
+  const { user, couple } = await getMyData();
   if (!user || !couple) return <p>Set up your couple first.</p>;
 
   const { data: notifications } = await supabase

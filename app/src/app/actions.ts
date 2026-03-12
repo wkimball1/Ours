@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { ensureProfile, getMe, getMyCouple, refreshSessionUnlock } from "@/lib/ours";
+import { ensureProfile, getMe, getMyCouple, getPartnerId, refreshSessionUnlock } from "@/lib/ours";
+import { sendLoveNoteEmail, sendReassuranceRequestEmail, sendReassuranceMessageEmail, sendSessionUnlockedEmail } from "@/lib/email";
 import crypto from "crypto";
 
 async function trackEvent(eventName: string, metadata: Record<string, unknown> = {}) {
@@ -14,6 +15,12 @@ async function trackEvent(eventName: string, metadata: Record<string, unknown> =
     event_name: eventName,
     metadata,
   });
+}
+
+function revalidateSessionPaths() {
+  revalidatePath("/app");
+  revalidatePath("/app/daily");
+  revalidatePath("/app/weekly");
 }
 
 function readAttribution(formData: FormData, fallbackSource = "unknown") {
@@ -32,13 +39,14 @@ export async function signUpAction(formData: FormData): Promise<void> {
   const email = String(formData.get("email") || "");
   const password = String(formData.get("password") || "");
   const firstName = String(formData.get("first_name") || "");
+  const timezone = String(formData.get("timezone") || "");
   const inviteToken = String(formData.get("invite_token") || "");
   const attribution = readAttribution(formData, inviteToken ? "invite" : "signup_direct");
 
   const { error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { first_name: firstName } },
+    options: { data: { first_name: firstName, timezone: timezone || undefined } },
   });
 
   if (error) redirect(`/signup?error=${encodeURIComponent(error.message)}`);
@@ -167,9 +175,7 @@ export async function saveResponseAction(formData: FormData) {
 
   const couple = await getMyCouple();
   if (couple) await refreshSessionUnlock(sessionId, couple);
-  revalidatePath("/app");
-  revalidatePath("/app/daily");
-  revalidatePath("/app/weekly");
+  revalidateSessionPaths();
 }
 
 export async function saveSessionResponsesAction(formData: FormData) {
@@ -203,12 +209,22 @@ export async function saveSessionResponsesAction(formData: FormData) {
   await supabase.from("responses").upsert(entries, { onConflict: "session_id,user_id,step_index" });
 
   const couple = await getMyCouple();
-  if (couple) await refreshSessionUnlock(sessionId, couple);
+  if (couple) {
+    const justUnlocked = await refreshSessionUnlock(sessionId, couple);
+    if (justUnlocked && couple.member2) {
+      const { data: session } = await supabase.from("sessions").select("type").eq("id", sessionId).single();
+      const sessionType = (session?.type ?? "daily") as "daily" | "weekly";
+      const { data: myProfile } = await supabase.from("profiles").select("first_name").eq("id", user.id).single();
+      const fromName = myProfile?.first_name || "Your partner";
+      const partnerId = getPartnerId(couple, user.id)!;
+      // Notify both: the person who was waiting + the person who just completed it
+      void sendSessionUnlockedEmail(user.id, fromName, sessionType);
+      void sendSessionUnlockedEmail(partnerId, fromName, sessionType);
+    }
+  }
   await trackEvent("session_submitted", { session_id: sessionId, responses_count: entries.length });
 
-  revalidatePath("/app");
-  revalidatePath("/app/daily");
-  revalidatePath("/app/weekly");
+  revalidateSessionPaths();
 }
 
 export async function requestReassuranceAction() {
@@ -217,7 +233,7 @@ export async function requestReassuranceAction() {
   const couple = await getMyCouple();
   if (!user || !couple?.member2) return;
 
-  const toUserId = couple.member1 === user.id ? couple.member2 : couple.member1;
+  const toUserId = getPartnerId(couple, user.id)!;
 
   await supabase.from("notifications").insert({
     couple_id: couple.id,
@@ -226,6 +242,9 @@ export async function requestReassuranceAction() {
     type: "reassurance_request",
     payload: { message: "Could you send me a quick grounding note?" },
   });
+
+  const { data: myProfile } = await supabase.from("profiles").select("first_name").eq("id", user.id).single();
+  void sendReassuranceRequestEmail(toUserId, myProfile?.first_name || "Your partner");
 
   revalidatePath("/app/reassurance");
   revalidatePath("/app");
@@ -238,7 +257,7 @@ export async function sendReassuranceMessageAction(formData: FormData) {
   const message = String(formData.get("message") || "");
   if (!user || !couple?.member2 || !message.trim()) return;
 
-  const toUserId = couple.member1 === user.id ? couple.member2 : couple.member1;
+  const toUserId = getPartnerId(couple, user.id)!;
 
   await supabase.from("notifications").insert({
     couple_id: couple.id,
@@ -247,6 +266,9 @@ export async function sendReassuranceMessageAction(formData: FormData) {
     type: "reassurance_message",
     payload: { message },
   });
+
+  const { data: myProfile } = await supabase.from("profiles").select("first_name").eq("id", user.id).single();
+  void sendReassuranceMessageEmail(toUserId, myProfile?.first_name || "Your partner", message);
 
   revalidatePath("/app/reassurance");
   revalidatePath("/app");
@@ -282,6 +304,15 @@ export async function saveSettingsAction(formData: FormData) {
   const nextVisitDate = String(formData.get("next_visit_date") || "");
   const relationshipStartDate = String(formData.get("relationship_start_date") || "");
 
+  const today = new Date().toISOString().slice(0, 10);
+
+  if (nextVisitDate && nextVisitDate < today) {
+    return redirect("/app/settings?error=Next+visit+date+can%27t+be+in+the+past");
+  }
+  if (relationshipStartDate && relationshipStartDate > today) {
+    return redirect("/app/settings?error=Relationship+start+date+can%27t+be+in+the+future");
+  }
+
   await supabase.from("profiles").update({ first_name: firstName, timezone }).eq("id", user.id);
 
   if (couple) {
@@ -296,6 +327,37 @@ export async function saveSettingsAction(formData: FormData) {
 
   revalidatePath("/app");
   revalidatePath("/app/settings");
+}
+
+export async function requestPasswordResetAction(formData: FormData): Promise<void> {
+  const supabase = await createClient();
+  const email = String(formData.get("email") || "").trim();
+  if (!email) redirect("/forgot-password?error=Please+enter+your+email");
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3001";
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${siteUrl}/auth/callback?next=/auth/reset-password`,
+  });
+
+  if (error) redirect(`/forgot-password?error=${encodeURIComponent(error.message)}`);
+  redirect("/forgot-password?sent=1");
+}
+
+export async function resetPasswordAction(formData: FormData): Promise<void> {
+  const supabase = await createClient();
+  const password = String(formData.get("password") || "");
+  const confirmPassword = String(formData.get("confirm_password") || "");
+
+  if (!password || password.length < 6) {
+    return redirect("/auth/reset-password?error=Password+must+be+at+least+6+characters");
+  }
+  if (password !== confirmPassword) {
+    return redirect("/auth/reset-password?error=Passwords+do+not+match");
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return redirect(`/auth/reset-password?error=${encodeURIComponent(error.message)}`);
+  redirect("/app/settings?success=password");
 }
 
 export async function joinChallengeWaitlistAction(formData: FormData): Promise<void> {
@@ -396,7 +458,7 @@ export async function sendLoveNoteAction(formData: FormData) {
   const message = String(formData.get("message") || "").trim();
   if (!message || message.length > 2000) return;
 
-  const toUserId = couple.member1 === user.id ? couple.member2 : couple.member1;
+  const toUserId = getPartnerId(couple, user.id)!;
 
   await supabase.from("love_notes").insert({
     couple_id: couple.id,
@@ -404,6 +466,9 @@ export async function sendLoveNoteAction(formData: FormData) {
     to_user_id: toUserId,
     message,
   });
+
+  const { data: myProfile } = await supabase.from("profiles").select("first_name").eq("id", user.id).single();
+  void sendLoveNoteEmail(toUserId, myProfile?.first_name || "Your partner");
 
   await trackEvent("love_note_sent");
   revalidatePath("/app/love-notes");

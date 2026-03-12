@@ -1,12 +1,12 @@
 import { AppShell } from "@/components/app-shell";
-import { ensureProfile, getMe, getMyCouple } from "@/lib/ours";
+import { OnboardingModal } from "@/components/onboarding-modal";
+import { ensureProfile, getMyCouple } from "@/lib/ours";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  await ensureProfile();
+  const user = await ensureProfile();
   const supabase = await createClient();
-  const user = await getMe();
-  const couple = await getMyCouple();
+  const couple = user ? await getMyCouple(user.id) : null;
 
   let unreadNotes = 0;
   if (user && couple) {
@@ -19,5 +19,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     unreadNotes = count ?? 0;
   }
 
-  return <AppShell unreadNotes={unreadNotes}>{children}</AppShell>;
+  return (
+    <>
+      <OnboardingModal hasPartner={!!couple?.member2} />
+      <AppShell unreadNotes={unreadNotes}>{children}</AppShell>
+    </>
+  );
 }

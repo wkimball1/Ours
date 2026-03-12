@@ -1,32 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 export function InviteShare({ inviteLink }: { inviteLink: string | null }) {
   const [copied, setCopied] = useState(false);
 
-  const suggestedText = useMemo(() => {
-    if (!inviteLink) return "";
-    return `Want to try Ours with me? It's a calm daily connection app for us. Join here: ${inviteLink}`;
-  }, [inviteLink]);
+  const suggestedText = inviteLink
+    ? `Want to try Ours with me? It's a calm daily connection app for us. Join here: ${inviteLink}`
+    : "";
 
   async function copyText(text: string) {
     if (!text) return;
-
     try {
-      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(text);
-      } else if (typeof document !== "undefined") {
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        ta.setAttribute("readonly", "");
-        ta.style.position = "absolute";
-        ta.style.left = "-9999px";
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-      }
+      await navigator.clipboard.writeText(text);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
     } catch {

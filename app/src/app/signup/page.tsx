@@ -28,7 +28,9 @@ export default async function SignupPage({
 
         {error && <p className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">{error}</p>}
 
-        <form action={signUpAction} className="mt-6 space-y-3" aria-label="Sign up form">
+        <form action={signUpAction} className="mt-6 space-y-3" aria-label="Sign up form" id="signup-form">
+          <input type="hidden" name="timezone" id="signup-timezone" />
+          <script dangerouslySetInnerHTML={{ __html: `try{document.getElementById('signup-timezone').value=Intl.DateTimeFormat().resolvedOptions().timeZone}catch(e){}` }} />
           <input type="hidden" name="source" value={source} />
           <input type="hidden" name="invite_token" value={params.invite || ""} />
           <input type="hidden" name="utm_source" value={params.utm_source || ""} />

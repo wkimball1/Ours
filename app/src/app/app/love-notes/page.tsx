@@ -1,29 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMe, getMyCouple } from "@/lib/ours";
+import { getMyData } from "@/lib/ours";
 import { sendLoveNoteAction, markNoteReadAction } from "@/app/actions";
 
 export default async function LoveNotesPage() {
   const supabase = await createClient();
-  const user = await getMe();
-  const couple = await getMyCouple();
+  const { user, couple } = await getMyData();
 
   if (!user || !couple) return <p className="text-sm text-stone-600">Set up your couple first.</p>;
 
   const hasPartner = !!couple.member2;
 
-  const { data: receivedNotes } = await supabase
-    .from("love_notes")
-    .select("*")
-    .eq("to_user_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(20);
-
-  const { data: sentNotes } = await supabase
-    .from("love_notes")
-    .select("*")
-    .eq("from_user_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(20);
+  const [{ data: receivedNotes }, { data: sentNotes }] = await Promise.all([
+    supabase.from("love_notes").select("*").eq("to_user_id", user.id).order("created_at", { ascending: false }).limit(20),
+    supabase.from("love_notes").select("*").eq("from_user_id", user.id).order("created_at", { ascending: false }).limit(20),
+  ]);
 
   const unreadNotes = (receivedNotes ?? []).filter((n) => !n.read_at);
 

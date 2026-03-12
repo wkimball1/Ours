@@ -1,18 +1,17 @@
 import { createClient } from "@/lib/supabase/server";
-import { ensureDailySession, getMe, getMyCouple, getPartnerId } from "@/lib/ours";
+import { ensureDailySession, getMyData, getPartnerId } from "@/lib/ours";
 import { SessionForm } from "@/components/session-form";
 
 export default async function DailyPage() {
   const supabase = await createClient();
-  const user = await getMe();
-  const couple = await getMyCouple();
+  const { user, couple } = await getMyData();
 
   if (!user || !couple) return <p>Set up your couple first.</p>;
 
   const session = await ensureDailySession(couple.id);
   if (!session) return <p className="text-sm text-stone-600">Today&apos;s daily prompts are being prepared. Check back in a little while!</p>;
 
-  const partnerId = await getPartnerId(couple, user.id);
+  const partnerId = getPartnerId(couple, user.id);
 
   const { data: prompts } = await supabase
     .from("prompts")
@@ -20,24 +19,16 @@ export default async function DailyPage() {
     .eq("content_set_id", session.content_set_id)
     .order("step_index");
 
-  const { data: mine } = await supabase
-    .from("responses")
-    .select("step_index, response_text")
-    .eq("session_id", session.id)
-    .eq("user_id", user.id);
+  const [{ data: mine }, { data: partnerRows }] = await Promise.all([
+    supabase.from("responses").select("step_index, response_text").eq("session_id", session.id).eq("user_id", user.id),
+    partnerId
+      ? supabase.from("responses").select("step_index, response_text").eq("session_id", session.id).eq("user_id", partnerId).order("step_index")
+      : Promise.resolve({ data: [] }),
+  ]);
 
   const existing = Object.fromEntries((mine ?? []).map((r) => [r.step_index, r.response_text]));
 
-  const { data: partnerRows } = partnerId
-    ? await supabase
-        .from("responses")
-        .select("step_index, response_text")
-        .eq("session_id", session.id)
-        .eq("user_id", partnerId)
-        .order("step_index")
-    : { data: [] };
-
-  const totalPrompts = prompts?.length ?? 3;
+  const totalPrompts = prompts?.length ?? 0;
   const mineCount = (mine ?? []).filter((r) => (r.response_text ?? "").trim().length > 0).length;
   const partnerCount = (partnerRows ?? []).filter((r) => (r.response_text ?? "").trim().length > 0).length;
 
