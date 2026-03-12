@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/actions";
 import { useState, useRef, useEffect } from "react";
+import { NotificationBell } from "@/components/notification-bell";
 
 const navItems = [
   { href: "/app", label: "Home" },
@@ -113,7 +114,10 @@ export function AppShell({ children, unreadNotes = 0 }: { children: React.ReactN
             <p className="mt-1 text-xl font-semibold tracking-tight text-stone-900 sm:text-2xl dark:text-stone-100">Stay close. Even when apart.</p>
             <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">Tiny, steady moments for both of you — with no pressure to be perfect.</p>
           </div>
-          <UserMenu />
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <UserMenu />
+          </div>
         </div>
 
         <nav aria-label="Primary" className="mt-5 hidden flex-wrap items-center gap-2 text-sm sm:flex">

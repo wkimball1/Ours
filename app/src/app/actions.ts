@@ -220,6 +220,11 @@ export async function saveSessionResponsesAction(formData: FormData) {
       // Notify both: the person who was waiting + the person who just completed it
       void sendSessionUnlockedEmail(user.id, fromName, sessionType);
       void sendSessionUnlockedEmail(partnerId, fromName, sessionType);
+      // In-app notifications for both partners
+      void supabase.from("notifications").insert([
+        { couple_id: couple.id, to_user_id: user.id, type: "session_unlocked", payload: { session_type: sessionType } },
+        { couple_id: couple.id, to_user_id: partnerId, type: "session_unlocked", payload: { session_type: sessionType } },
+      ]);
     }
   }
   await trackEvent("session_submitted", { session_id: sessionId, responses_count: entries.length });
@@ -401,6 +406,19 @@ export async function answerWouldYouRatherAction(formData: FormData) {
     { onConflict: "couple_id,user_id,question_id" }
   );
 
+  if (couple.member2) {
+    const partnerId = getPartnerId(couple, user.id);
+    if (partnerId) {
+      void supabase.from("notifications").insert({
+        couple_id: couple.id,
+        to_user_id: partnerId,
+        from_user_id: user.id,
+        type: "game_answered",
+        payload: { game: "Would You Rather", href: "/app/games/would-you-rather" },
+      });
+    }
+  }
+
   revalidatePath("/app/games/would-you-rather");
 }
 
@@ -424,6 +442,19 @@ export async function saveDrawingAction(formData: FormData) {
     { onConflict: "couple_id,user_id,session_date" }
   );
 
+  if (couple.member2) {
+    const partnerId = getPartnerId(couple, user.id);
+    if (partnerId) {
+      void supabase.from("notifications").insert({
+        couple_id: couple.id,
+        to_user_id: partnerId,
+        from_user_id: user.id,
+        type: "game_answered",
+        payload: { game: "Draw Together", href: "/app/games/draw" },
+      });
+    }
+  }
+
   revalidatePath("/app/games/draw");
 }
 
@@ -445,6 +476,19 @@ export async function answerThisOrThatAction(formData: FormData) {
     row,
     { onConflict: "couple_id,user_id,question_id" }
   );
+
+  if (couple.member2) {
+    const partnerId = getPartnerId(couple, user.id);
+    if (partnerId) {
+      void supabase.from("notifications").insert({
+        couple_id: couple.id,
+        to_user_id: partnerId,
+        from_user_id: user.id,
+        type: "game_answered",
+        payload: { game: "This or That", href: "/app/games/this-or-that" },
+      });
+    }
+  }
 
   revalidatePath("/app/games/this-or-that");
 }
