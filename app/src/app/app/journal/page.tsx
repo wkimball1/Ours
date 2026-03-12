@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getMyData } from "@/lib/ours";
 import { saveJournalEntryAction, deleteJournalEntryAction } from "@/app/actions";
+import { LocalTime } from "@/components/local-time";
 
 export default async function JournalPage() {
   const supabase = await createClient();
@@ -57,8 +58,6 @@ export default async function JournalPage() {
         {(entries ?? []).map((entry) => {
           const isMe = entry.user_id === user.id;
           const name = nameMap[entry.user_id] || "Partner";
-          const date = new Date(entry.created_at);
-
           return (
             <div
               key={entry.id}
@@ -78,7 +77,7 @@ export default async function JournalPage() {
                 </span>
                 <span className="text-sm font-semibold text-stone-900 dark:text-stone-100">{name}</span>
                 <span className="text-xs text-stone-400 dark:text-stone-500">
-                  {date.toLocaleDateString(undefined, { month: "short", day: "numeric" })} at {date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}
+                  <LocalTime dateStr={entry.created_at} />
                 </span>
               </div>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-stone-700 dark:text-stone-200">
