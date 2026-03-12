@@ -14,12 +14,8 @@ const navItems = [
   { href: "/app/love-notes", label: "Notes" },
   { href: "/app/journal", label: "Journal" },
   { href: "/app/memories", label: "Memories" },
-];
-
-const menuItems = [
   { href: "/app/milestones", label: "Milestones" },
   { href: "/app/reassurance", label: "Reassurance" },
-  { href: "/app/settings", label: "Settings" },
 ];
 
 const mobileItems = [
@@ -34,7 +30,7 @@ function isActive(pathname: string, href: string) {
   return pathname.startsWith(href);
 }
 
-function UserMenu() {
+function SettingsMenu() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -51,41 +47,35 @@ function UserMenu() {
     setOpen(false);
   }, [pathname]);
 
-  const menuActive = menuItems.some((item) => isActive(pathname, item.href));
+  const settingsActive = isActive(pathname, "/app/settings");
 
   return (
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
         aria-expanded={open}
-        className={`flex min-h-11 items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 active:scale-[0.98] ${
-          menuActive
+        aria-label="Settings"
+        className={`flex min-h-11 items-center justify-center rounded-full border px-3 py-2 transition hover:-translate-y-0.5 active:scale-[0.98] ${
+          settingsActive
             ? "btn-accent shadow-sm"
             : "border-stone-300 bg-white text-stone-700 hover:border-stone-400 hover:text-stone-900 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
         }`}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        <span className="hidden sm:inline">More</span>
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-2 w-48 rounded-2xl border border-stone-200 bg-white py-2 shadow-lg sm:left-auto sm:right-0 dark:border-stone-700 dark:bg-stone-900">
-          {menuItems.map((item) => {
-            const active = isActive(pathname, item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`block px-4 py-2.5 text-sm font-medium transition ${
-                  active
-                    ? "bg-stone-100 text-stone-900 dark:bg-stone-800 dark:text-stone-100"
-                    : "text-stone-700 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-800"
-                }`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
+        <div className="absolute right-0 top-full z-50 mt-2 w-44 rounded-2xl border border-stone-200 bg-white py-2 shadow-lg dark:border-stone-700 dark:bg-stone-900">
+          <Link
+            href="/app/settings"
+            className={`block px-4 py-2.5 text-sm font-medium transition ${
+              settingsActive
+                ? "bg-stone-100 text-stone-900 dark:bg-stone-800 dark:text-stone-100"
+                : "text-stone-700 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-800"
+            }`}
+          >
+            Settings
+          </Link>
           <div className="my-1 border-t border-stone-200 dark:border-stone-700" />
           <form action={logoutAction}>
             <button className="block w-full px-4 py-2.5 text-left text-sm font-medium text-stone-500 transition hover:bg-stone-50 hover:text-stone-700 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200">
@@ -107,20 +97,16 @@ export function AppShell({ children, unreadNotes = 0 }: { children: React.ReactN
 
   return (
     <main className="mx-auto max-w-5xl px-4 pb-24 pt-6 sm:px-6 sm:pb-10 sm:pt-8">
-      <header className="mb-6 rounded-3xl border border-stone-200/80 bg-white/90 p-5 shadow-sm backdrop-blur sm:mb-8 sm:p-6 dark:border-stone-700 dark:bg-stone-900/80">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-xl">
-            <p className="text-accent text-xs font-semibold uppercase tracking-[0.22em]">Ours</p>
-            <p className="mt-1 text-xl font-semibold tracking-tight text-stone-900 sm:text-2xl dark:text-stone-100">Stay close. Even when apart.</p>
-            <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">Tiny, steady moments for both of you — with no pressure to be perfect.</p>
-          </div>
+      <header className="mb-6 rounded-3xl border border-stone-200/80 bg-white/90 p-4 shadow-sm backdrop-blur sm:mb-8 sm:px-6 sm:py-4 dark:border-stone-700 dark:bg-stone-900/80">
+        <div className="flex items-center justify-between gap-4">
+          <Link href="/app" className="text-accent text-sm font-bold uppercase tracking-[0.22em]">Ours</Link>
           <div className="flex items-center gap-2">
             <NotificationBell />
-            <UserMenu />
+            <SettingsMenu />
           </div>
         </div>
 
-        <nav aria-label="Primary" className="mt-5 hidden flex-wrap items-center gap-2 text-sm sm:flex">
+        <nav aria-label="Primary" className="mt-4 hidden flex-wrap items-center gap-2 text-sm sm:flex">
           {navItems.map((item) => {
             const active = isActive(pathname, item.href);
             const showBadge = item.href === "/app/love-notes" && unreadNotes > 0;
@@ -129,7 +115,7 @@ export function AppShell({ children, unreadNotes = 0 }: { children: React.ReactN
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`relative rounded-full border px-3 py-2 font-medium transition ${
+                className={`relative rounded-full border px-3 py-1.5 font-medium transition ${
                   active
                     ? "btn-accent shadow-sm"
                     : "border-stone-300 bg-white text-stone-700 hover:-translate-y-0.5 hover:border-stone-400 hover:bg-stone-50 hover:text-stone-900 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
