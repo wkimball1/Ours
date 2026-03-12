@@ -62,29 +62,30 @@ export function NotificationBell() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  async function handleToggle() {
-    const next = !open;
-    setOpen(next);
-    if (next && data && data.notifications.length > 0) {
-      await fetch("/api/notifications", { method: "POST" });
+  // Mark as read and clear badge only when the dropdown closes
+  function closeAndMarkRead() {
+    setOpen(false);
+    if (data && data.notifications.length > 0) {
+      fetch("/api/notifications", { method: "POST" }).catch(() => {});
       setData((prev) => prev ? { ...prev, count: prev.unreadNotes, notifications: [] } : prev);
     }
   }
 
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) closeAndMarkRead();
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [data]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const count = data?.count ?? 0;
+  const hasItems = data && (data.unreadNotes > 0 || data.notifications.length > 0);
 
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={handleToggle}
+        onClick={() => (open ? closeAndMarkRead() : setOpen(true))}
         aria-label={`Notifications${count > 0 ? ` (${count} unread)` : ""}`}
         className="relative flex min-h-11 items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3 py-2 text-stone-700 transition hover:-translate-y-0.5 hover:border-stone-400 hover:text-stone-900 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
       >
@@ -108,7 +109,7 @@ export function NotificationBell() {
           {data && data.unreadNotes > 0 && (
             <Link
               href="/app/love-notes"
-              onClick={() => setOpen(false)}
+              onClick={closeAndMarkRead}
               className="flex items-center gap-3 border-b border-stone-100 px-4 py-3 hover:bg-stone-50 dark:border-stone-800 dark:hover:bg-stone-800"
             >
               <span className="text-lg leading-none">💌</span>
@@ -118,26 +119,26 @@ export function NotificationBell() {
             </Link>
           )}
 
-          {data?.notifications && data.notifications.length > 0 ? (
+          {data?.notifications && data.notifications.length > 0 && (
             data.notifications.map((notif) => {
               const { label, href } = notifMeta(notif.type, notif.payload);
               return (
                 <Link
                   key={notif.id}
                   href={href}
-                  onClick={() => setOpen(false)}
+                  onClick={closeAndMarkRead}
                   className="flex items-center gap-3 border-b border-stone-100 px-4 py-3 last:border-0 hover:bg-stone-50 dark:border-stone-800 dark:hover:bg-stone-800"
                 >
                   <span className="text-sm text-stone-700 dark:text-stone-300">{label}</span>
                 </Link>
               );
             })
-          ) : (
-            data && data.unreadNotes === 0 && (
-              <p className="px-4 py-6 text-center text-sm text-stone-500 dark:text-stone-400">
-                All caught up! 🎉
-              </p>
-            )
+          )}
+
+          {!hasItems && (
+            <p className="px-4 py-6 text-center text-sm text-stone-500 dark:text-stone-400">
+              All caught up! 🎉
+            </p>
           )}
         </div>
       )}
