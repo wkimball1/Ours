@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getMyData } from "@/lib/ours";
 import { ThemePicker } from "@/components/theme-picker";
 import { AvatarUpload } from "@/components/avatar-upload";
+import { ConfirmDangerAction } from "@/components/confirm-danger-action";
 
 const tzSuggestions = [
   "America/New_York",
@@ -160,28 +161,25 @@ export default async function SettingsPage({
             <p className="text-sm text-stone-600 dark:text-stone-300">Currently linked with <strong>{partnerProfile?.first_name || "your partner"}</strong>.</p>
           )}
           <p className="text-sm text-stone-600 dark:text-stone-300">You&apos;ll be unlinked from this shared space. Your account stays — you can start a new space or join a new one with a fresh invite.</p>
-          <form action={leavePartnerAction}>
-            <button
-              type="submit"
-              className="min-h-11 rounded-xl border border-amber-300 bg-white px-4 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-50 dark:border-amber-700 dark:bg-stone-800 dark:text-amber-400 dark:hover:bg-amber-950"
-            >
-              Leave partner
-            </button>
-          </form>
+          <ConfirmDangerAction
+            buttonLabel="Leave partner"
+            confirmLabel="Yes, leave"
+            action={leavePartnerAction}
+            variant="amber"
+          />
         </div>
       )}
 
       <div className="space-y-3 rounded-2xl border border-red-200 bg-white p-5 shadow-sm dark:border-red-800 dark:bg-stone-900">
         <h3 className="text-base font-semibold text-red-700 dark:text-red-400">Delete account</h3>
         <p className="text-sm text-stone-600 dark:text-stone-300">This will remove your profile and unlink you from your shared space. Your partner will keep access to shared memories and content.</p>
-        <form action={deleteAccountAction}>
-          <button
-            type="submit"
-            className="min-h-11 rounded-xl border border-red-300 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 dark:border-red-700 dark:bg-stone-800 dark:text-red-400 dark:hover:bg-red-950"
-          >
-            Delete my account
-          </button>
-        </form>
+        <ConfirmDangerAction
+          buttonLabel="Delete my account"
+          confirmLabel="Permanently delete"
+          requireTyping="DELETE"
+          action={deleteAccountAction}
+          variant="red"
+        />
       </div>
     </section>
   );
