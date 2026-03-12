@@ -3,6 +3,29 @@
 import { useRef, useState, useTransition } from "react";
 import { uploadAvatarAction } from "@/app/actions";
 
+const MAX_DIM = 400; // resize to fit within 400×400
+const JPEG_QUALITY = 0.82;
+
+function compressImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", JPEG_QUALITY));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
 interface Props {
   currentAvatarUrl: string | null;
 }
@@ -13,23 +36,20 @@ export function AvatarUpload({ currentAvatarUrl }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (file.size > 1024 * 1024) {
-      setError("Photo must be under 1 MB.");
-      return;
-    }
     if (!file.type.startsWith("image/")) {
       setError("Please choose an image file.");
       return;
     }
-
     setError(null);
-    const reader = new FileReader();
-    reader.onload = () => setPreview(reader.result as string);
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressImage(file);
+      setPreview(compressed);
+    } catch {
+      setError("Could not read that image. Try another file.");
+    }
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -56,7 +76,7 @@ export function AvatarUpload({ currentAvatarUrl }: Props) {
         )}
         <div className="flex-1">
           <label className="block space-y-1.5">
-            <span className="text-sm font-medium text-stone-800 dark:text-stone-200">Upload a new photo</span>
+            <span className="text-sm font-medium text-stone-800 dark:text-stone-200">Upload a photo</span>
             <input
               ref={fileInputRef}
               type="file"
@@ -65,7 +85,7 @@ export function AvatarUpload({ currentAvatarUrl }: Props) {
               className="block w-full text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-stone-100 file:px-3 file:py-1.5 file:text-sm file:font-medium dark:text-stone-400 dark:file:bg-stone-700 dark:file:text-stone-200"
             />
           </label>
-          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">Max 1 MB. Your partner will see this on their home screen.</p>
+          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">Any size — automatically resized. Your partner sees this on their home screen.</p>
         </div>
       </div>
       {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
