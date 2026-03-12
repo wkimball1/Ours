@@ -545,6 +545,48 @@ export async function changePasswordAction(formData: FormData) {
   redirect("/app/settings?success=password");
 }
 
+export async function leavePartnerAction() {
+  const supabase = await createClient();
+  const user = await getMe();
+  if (!user) return redirect("/login");
+
+  const couple = await getMyCouple();
+  if (!couple || !couple.member2) return;
+
+  if (couple.member1 === user.id) {
+    await supabase.from("couples").update({ member1: couple.member2, member2: null }).eq("id", couple.id);
+  } else {
+    await supabase.from("couples").update({ member2: null }).eq("id", couple.id);
+  }
+
+  await trackEvent("partner_left");
+  revalidatePath("/app");
+  redirect("/app");
+}
+
+export async function uploadAvatarAction(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getMe();
+  if (!user) return;
+
+  const file = formData.get("avatar") as File | null;
+  if (!file || !file.size) return;
+
+  if (file.size > 1024 * 1024) {
+    return redirect("/app/settings?error=Photo+must+be+under+1MB");
+  }
+  if (!file.type.startsWith("image/")) {
+    return redirect("/app/settings?error=Please+upload+an+image+file");
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const dataUrl = `data:${file.type};base64,${buffer.toString("base64")}`;
+
+  await supabase.from("profiles").update({ avatar_url: dataUrl }).eq("id", user.id);
+  revalidatePath("/app");
+  revalidatePath("/app/settings");
+}
+
 export async function deleteAccountAction() {
   const supabase = await createClient();
   const user = await getMe();
