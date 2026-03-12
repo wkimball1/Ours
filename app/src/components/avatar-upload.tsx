@@ -65,7 +65,7 @@ export function AvatarUpload({ currentAvatarUrl }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+    <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
       <h3 className="text-base font-semibold text-stone-900 dark:text-stone-100">Your photo</h3>
       <div className="flex items-center gap-4">
         {preview ? (

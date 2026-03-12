@@ -22,7 +22,7 @@ export default async function ChallengePage({
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-10 sm:py-16">
-      <div className="rounded-3xl border border-stone-200/80 bg-white/95 p-6 shadow-sm backdrop-blur sm:p-8 dark:border-stone-700 dark:bg-stone-900/85">
+      <div className="rounded-3xl border border-[var(--border)]/80 bg-card/95 p-6 shadow-sm backdrop-blur sm:p-8">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">7-Day Feel Chosen Challenge</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Feel chosen every day — even when life is chaos.</h1>
         <p className="mt-3 text-sm text-stone-600 dark:text-stone-300">

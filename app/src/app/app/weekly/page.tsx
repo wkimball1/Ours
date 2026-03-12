@@ -39,13 +39,13 @@ export default async function WeeklyPage() {
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">
-        <p className="rounded-xl border border-stone-200 bg-white p-3 text-sm text-stone-700 shadow-sm dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200">
+        <p className="rounded-xl border border-[var(--border)] bg-card p-3 text-sm text-stone-700 shadow-sm dark:text-stone-200">
           Status: <strong className="font-semibold text-stone-900 dark:text-stone-100">{session.status}</strong>
         </p>
-        <p className="rounded-xl border border-stone-200 bg-white p-3 text-sm text-stone-700 shadow-sm dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200">
+        <p className="rounded-xl border border-[var(--border)] bg-card p-3 text-sm text-stone-700 shadow-sm dark:text-stone-200">
           You: <strong className="text-stone-900 dark:text-stone-100">{mineCount}/{totalPrompts}</strong>
         </p>
-        <p className="rounded-xl border border-stone-200 bg-white p-3 text-sm text-stone-700 shadow-sm dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200">
+        <p className="rounded-xl border border-[var(--border)] bg-card p-3 text-sm text-stone-700 shadow-sm dark:text-stone-200">
           Partner: <strong className="text-stone-900 dark:text-stone-100">{partnerCount}/{totalPrompts}</strong>
         </p>
       </div>
@@ -54,7 +54,7 @@ export default async function WeeklyPage() {
 
       {session.status === "unlocked" && (
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+          <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
             <p className="font-semibold text-stone-900 dark:text-stone-100">Your weekly reset</p>
             <div className="mt-3 space-y-2 text-sm text-stone-700 dark:text-stone-200">
               {(mine ?? []).map((r) => (
@@ -62,7 +62,7 @@ export default async function WeeklyPage() {
               ))}
             </div>
           </div>
-          <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+          <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
             <p className="font-semibold text-stone-900 dark:text-stone-100">Partner weekly reset</p>
             <div className="mt-3 space-y-2 text-sm text-stone-700 dark:text-stone-200">
               {(partnerRows ?? []).map((r) => (

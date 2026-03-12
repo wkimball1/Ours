@@ -12,7 +12,7 @@ export default async function ForgotPasswordPage({
 
   return (
     <main className="mx-auto max-w-md px-5 py-10 sm:py-16">
-      <div className="rounded-3xl border border-stone-200/80 bg-white/95 p-6 shadow-sm backdrop-blur sm:p-8 dark:border-stone-700 dark:bg-stone-900/85">
+      <div className="rounded-3xl border border-[var(--border)]/80 bg-card/95 p-6 shadow-sm backdrop-blur sm:p-8">
         <p className="text-accent text-xs font-semibold uppercase tracking-[0.2em]">Account</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Reset your password.</h1>
         <p className="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-300">

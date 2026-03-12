@@ -23,7 +23,7 @@ export default function MorePage() {
           <Link
             key={item.href}
             href={item.href}
-            className="block rounded-2xl border border-stone-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] dark:border-stone-700 dark:bg-stone-900"
+            className="block rounded-2xl border border-[var(--border)] bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]"
           >
             <p className="font-semibold text-stone-900 dark:text-stone-100">{item.label}</p>
             <p className="mt-0.5 text-sm text-stone-500 dark:text-stone-400">{item.description}</p>
@@ -32,7 +32,7 @@ export default function MorePage() {
       </div>
 
       <form action={logoutAction}>
-        <button className="w-full rounded-2xl border border-stone-200 bg-white p-4 text-left text-sm font-medium text-stone-500 shadow-sm transition hover:bg-stone-50 hover:text-stone-700 active:scale-[0.99] dark:border-stone-700 dark:bg-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200">
+        <button className="w-full rounded-2xl border border-[var(--border)] bg-card p-4 text-left text-sm font-medium text-stone-500 shadow-sm transition hover:bg-stone-50 hover:text-stone-700 active:scale-[0.99] dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200">
           Log out
         </button>
       </form>

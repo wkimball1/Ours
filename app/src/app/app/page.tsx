@@ -25,7 +25,7 @@ export default async function AppHomePage() {
 
   if (!couple || !user) {
     return (
-      <section className="space-y-4 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+      <section className="space-y-4 rounded-3xl border border-[var(--border)] bg-card p-6 shadow-sm">
         <h2 className="text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Let’s create your space</h2>
         <p className="text-sm leading-relaxed text-stone-600 dark:text-stone-300">Start your shared home, then invite your partner with a private link when it feels right.</p>
         <form action={createCoupleAction}>
@@ -96,7 +96,7 @@ export default async function AppHomePage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={partnerPresence.avatar_url} alt={partnerPresence.first_name ?? "Partner"} className="h-7 w-7 rounded-full object-cover ring-2 ring-white/30" />
               ) : (
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-sm">🤍</div>
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-card/20 text-sm">🤍</div>
               )}
               <p className={`text-xs font-medium ${timeAgo(partnerPresence.last_active_at) === "Active now" ? "text-emerald-300" : "text-stone-400"}`}>
                 {partnerPresence.first_name ? `${partnerPresence.first_name}: ` : ""}{timeAgo(partnerPresence.last_active_at)}
@@ -109,7 +109,7 @@ export default async function AppHomePage() {
       </div>
 
       {!couple.member2 && (
-        <div className="space-y-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm md:col-span-2 dark:border-stone-700 dark:bg-stone-900">
+        <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm md:col-span-2">
           <p className="text-base font-semibold text-stone-900 dark:text-stone-100">Invite your partner</p>
           <p className="text-sm text-stone-600 dark:text-stone-300">Most couples connect faster when this is sent right after signup. Use the ready-to-send text to remove friction.</p>
 
@@ -119,7 +119,7 @@ export default async function AppHomePage() {
               await generateInviteAction();
             }}
           >
-            <button className="min-h-11 rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">Generate or refresh invite link</button>
+            <button className="min-h-11 rounded-xl border border-stone-300 bg-card px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">Generate or refresh invite link</button>
           </form>
 
           <InviteShare inviteLink={inviteLink} />
@@ -153,44 +153,44 @@ export default async function AppHomePage() {
 
       <Card title="Today’s Daily Moment" subtitle="Three gentle prompts to reconnect.">
         <StatusBadge state={dailyState} />
-        <Link href="/app/daily" className="mt-3 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
+        <Link href="/app/daily" className="mt-3 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-card px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
           Open Daily Moment
         </Link>
       </Card>
 
       <Card title="Weekly Reset" subtitle="A longer check-in for bigger feelings and plans.">
         <StatusBadge state={weeklyState} />
-        <Link href="/app/weekly" className="mt-3 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
+        <Link href="/app/weekly" className="mt-3 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-card px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
           Open Weekly Reset
         </Link>
       </Card>
 
       <Card title="Reassurance" subtitle="Ask softly, answer warmly, and lower the temperature together.">
-        <Link href="/app/reassurance" className="mt-1 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
+        <Link href="/app/reassurance" className="mt-1 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-card px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
           Open Reassurance
         </Link>
       </Card>
 
       <Card title="Love Notes" subtitle="Leave a surprise note for your partner to find whenever they open the app.">
-        <Link href="/app/love-notes" className="mt-1 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
+        <Link href="/app/love-notes" className="mt-1 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-card px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
           Open Love Notes
         </Link>
       </Card>
 
       <Card title="Our Journal" subtitle="A shared space for thoughts, feelings, and memories — no prompts needed.">
-        <Link href="/app/journal" className="mt-1 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
+        <Link href="/app/journal" className="mt-1 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-card px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
           Open Journal
         </Link>
       </Card>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm md:col-span-2 dark:border-stone-700 dark:bg-stone-900">
+      <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm md:col-span-2">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-base font-semibold text-stone-900 dark:text-stone-100">Your story so far</p>
             <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">Look back on everything you&apos;ve shared, or celebrate how far you&apos;ve come.</p>
           </div>
           <div className="flex gap-2">
-            <Link href="/app/memories" className="inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
+            <Link href="/app/memories" className="inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-card px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
               Memories
             </Link>
             <Link href="/app/milestones" className="inline-flex min-h-11 items-center rounded-xl px-3 py-2 text-sm font-semibold btn-accent transition">
@@ -231,7 +231,7 @@ async function getSessionState(
 
 function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+    <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
       <p className="text-base font-semibold text-stone-900 dark:text-stone-100">{title}</p>
       {subtitle && <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">{subtitle}</p>}
       <div className="mt-3">{children}</div>

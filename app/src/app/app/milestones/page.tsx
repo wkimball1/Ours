@@ -169,7 +169,7 @@ export default async function MilestonesPage() {
             key={m.title}
             className={`rounded-2xl border p-5 shadow-sm transition ${
               m.achieved
-                ? "border-stone-200 bg-white dark:border-stone-700 dark:bg-stone-900"
+                ? "border-[var(--border)] bg-card"
                 : "border-dashed border-stone-300 bg-stone-50 opacity-70 dark:border-stone-600 dark:bg-stone-800/50"
             }`}
           >

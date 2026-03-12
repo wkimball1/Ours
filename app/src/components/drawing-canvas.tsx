@@ -18,6 +18,8 @@ export function DrawingCanvas({ promptId, existingDrawing }: Props) {
   const lastPoint = useRef<{ x: number; y: number } | null>(null);
   const [history, setHistory] = useState<ImageData[]>([]);
   const [drawingLocked, setDrawingLocked] = useState(false);
+  const [erasing, setErasing] = useState(false);
+  const drawColor = erasing ? "#fafaf9" : color;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -98,14 +100,14 @@ export function DrawingCanvas({ promptId, existingDrawing }: Props) {
     ctx.beginPath();
     ctx.moveTo(lastPoint.current.x, lastPoint.current.y);
     ctx.lineTo(pos.x, pos.y);
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = drawColor;
     ctx.lineWidth = brushSize;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.stroke();
     lastPoint.current = pos;
     setHasDrawn(true);
-  }, [isDrawing, color, brushSize, getPos]);
+  }, [isDrawing, drawColor, brushSize, getPos]);
 
   const endDraw = useCallback(() => {
     setIsDrawing(false);
@@ -132,25 +134,11 @@ export function DrawingCanvas({ promptId, existingDrawing }: Props) {
     startTransition(() => saveDrawingAction(fd));
   }
 
-  const colors = ["#1c1917", "#dc2626", "#2563eb", "#16a34a", "#d97706", "#9333ea", "#ec4899", "#fafaf9"];
+  const colors = ["#1c1917", "#dc2626", "#2563eb", "#16a34a", "#d97706", "#9333ea", "#ec4899"];
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <label className="flex items-center gap-2 text-sm font-medium text-stone-700 dark:text-stone-300">
-            <input
-              type="checkbox"
-              checked={drawingLocked}
-              onChange={(e) => setDrawingLocked(e.target.checked)}
-              className="h-4 w-4 rounded border-stone-300"
-            />
-            Lock canvas to scroll
-          </label>
-        </div>
-      </div>
-
-      <div className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 shadow-sm dark:border-stone-700">
+      <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-stone-50 shadow-sm">
         <canvas
           ref={canvasRef}
           className={`h-[300px] w-full sm:h-[400px] ${drawingLocked ? "touch-auto" : "touch-none cursor-crosshair"}`}
@@ -165,40 +153,60 @@ export function DrawingCanvas({ promptId, existingDrawing }: Props) {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
+        {/* Color swatches */}
         <div className="flex flex-wrap gap-1.5">
           {colors.map((c) => (
             <button
               key={c}
-              onClick={() => setColor(c)}
-              className={`h-7 w-7 rounded-full border-2 transition ${color === c ? "border-stone-900 scale-110 dark:border-stone-100" : "border-stone-300 dark:border-stone-600"}`}
+              onClick={() => { setColor(c); setErasing(false); }}
+              aria-label={c}
+              className={`h-7 w-7 rounded-full border-2 transition ${!erasing && color === c ? "scale-110 border-stone-900 dark:border-stone-100" : "border-stone-300 dark:border-stone-600"}`}
               style={{ backgroundColor: c }}
             />
           ))}
+          {/* Eraser */}
+          <button
+            onClick={() => setErasing((e) => !e)}
+            aria-label="Eraser"
+            title="Eraser"
+            className={`h-7 w-7 rounded-full border-2 transition flex items-center justify-center text-sm ${erasing ? "scale-110 border-stone-900 bg-stone-100 dark:border-stone-100 dark:bg-stone-700" : "border-stone-300 bg-card dark:border-stone-600 dark:bg-stone-800"}`}
+          >
+            ✕
+          </button>
         </div>
 
+        {/* Brush size */}
         <select
           value={brushSize}
           onChange={(e) => setBrushSize(Number(e.target.value))}
-          className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm dark:border-stone-600 dark:bg-stone-800"
+          className="rounded-lg border border-stone-300 bg-card px-2 py-1.5 text-sm dark:border-stone-600 dark:bg-stone-800"
         >
           <option value={2}>Fine</option>
           <option value={4}>Medium</option>
           <option value={8}>Thick</option>
           <option value={16}>Bold</option>
         </select>
+
+        {/* Scroll lock toggle */}
+        <button
+          onClick={() => setDrawingLocked((l) => !l)}
+          className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${drawingLocked ? "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300" : "border-stone-300 bg-card text-stone-600 hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300"}`}
+        >
+          {drawingLocked ? "🔒 Scroll locked" : "Scroll ↕"}
+        </button>
       </div>
 
       <div className="flex gap-2">
         <button
           onClick={undo}
           disabled={history.length === 0}
-          className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50 disabled:opacity-40 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200"
+          className="rounded-xl border border-stone-300 bg-card px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50 disabled:opacity-40 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200"
         >
           Undo
         </button>
         <button
           onClick={clearCanvas}
-          className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200"
+          className="rounded-xl border border-stone-300 bg-card px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200"
         >
           Clear
         </button>

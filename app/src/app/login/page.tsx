@@ -24,7 +24,7 @@ export default async function LoginPage({
 
   return (
     <main className="mx-auto max-w-md px-5 py-10 sm:py-16">
-      <div className="rounded-3xl border border-stone-200/80 bg-white/95 p-6 shadow-sm backdrop-blur sm:p-8 dark:border-stone-700 dark:bg-stone-900/85">
+      <div className="rounded-3xl border border-[var(--border)]/80 bg-card/95 p-6 shadow-sm backdrop-blur sm:p-8">
         <p className="text-accent text-xs font-semibold uppercase tracking-[0.2em]">Welcome back</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Glad you’re here.</h1>
         <p className="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-300">A quiet moment with your person is waiting whenever you’re ready.</p>
@@ -58,13 +58,13 @@ export default async function LoginPage({
         </form>
 
         {magicLinksEnabled ? (
-          <form action={magicLinkAction} className="mt-4 space-y-2 rounded-2xl border border-stone-200 bg-stone-50 p-4 dark:border-stone-700 dark:bg-stone-800/70" aria-label="Magic link form">
+          <form action={magicLinkAction} className="mt-4 space-y-2 rounded-2xl border border-[var(--border)] bg-stone-50 p-4 dark:bg-stone-800/70" aria-label="Magic link form">
             <p className="text-sm font-medium text-stone-700 dark:text-stone-200">Prefer a magic link?</p>
-            <input name="email" type="email" required autoComplete="email" placeholder="you@example.com" className="w-full bg-white px-3 py-2.5 dark:bg-stone-900" />
-            <button className="min-h-11 w-full rounded-xl border border-stone-300 bg-white p-2.5 text-sm font-medium text-stone-800 transition hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-100 dark:hover:bg-stone-700">Send magic link</button>
+            <input name="email" type="email" required autoComplete="email" placeholder="you@example.com" className="w-full bg-card px-3 py-2.5" />
+            <button className="min-h-11 w-full rounded-xl border border-stone-300 bg-card p-2.5 text-sm font-medium text-stone-800 transition hover:bg-stone-100 dark:border-stone-600 dark:text-stone-100 dark:hover:bg-stone-700">Send magic link</button>
           </form>
         ) : (
-          <div className="mt-4 rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-600 dark:border-stone-700 dark:bg-stone-800/70 dark:text-stone-300">
+          <div className="mt-4 rounded-2xl border border-[var(--border)] bg-stone-50 p-4 text-sm text-stone-600 dark:bg-stone-800/70 dark:text-stone-300">
             Magic links are temporarily paused in development to avoid email rate limits.
           </div>
         )}

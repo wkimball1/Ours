@@ -48,8 +48,8 @@ export function WouldYouRatherCard({ question, myChoice, myGuess, partnerChoice,
 
   const btnBase = "rounded-2xl border-2 p-6 text-left text-lg font-medium transition";
   const btnSelected = "btn-accent border-transparent";
-  const btnUnselected = "border-stone-200 bg-stone-50 text-stone-400 dark:border-stone-700 dark:bg-stone-800/50 dark:text-stone-500";
-  const btnActive = "border-stone-200 bg-white text-stone-900 hover:-translate-y-1 hover:border-stone-400 hover:shadow-md active:scale-[0.98] dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:hover:border-stone-500";
+  const btnUnselected = "border-[var(--border)] bg-stone-50 text-stone-400 dark:bg-stone-800/50 dark:text-stone-500";
+  const btnActive = "border-[var(--border)] bg-card text-stone-900 hover:-translate-y-1 hover:border-stone-400 hover:shadow-md active:scale-[0.98] dark:text-stone-100 dark:hover:border-stone-500";
   const btnGuessActive = "border-sky-200 bg-sky-50 text-stone-900 hover:-translate-y-1 hover:border-sky-400 hover:shadow-md active:scale-[0.98] dark:border-sky-700 dark:bg-sky-950 dark:text-stone-100 dark:hover:border-sky-500";
 
   function choiceStyle(opt: "a" | "b") {
@@ -141,7 +141,7 @@ export function WouldYouRatherCard({ question, myChoice, myGuess, partnerChoice,
       )}
 
       {showWaiting && !hasPartner && (
-        <p className="rounded-xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
+        <p className="rounded-xl border border-[var(--border)] bg-stone-50 p-3 text-sm text-stone-600">
           Invite your partner to see how you compare.
         </p>
       )}

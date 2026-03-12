@@ -18,7 +18,7 @@ export function ThemePicker() {
   const colors = activeStyles[theme] || activeStyles.stone;
 
   return (
-    <div className="space-y-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+    <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
       <h3 className="text-base font-semibold text-stone-900 dark:text-stone-100">Color theme</h3>
       <p className="text-sm text-stone-600 dark:text-stone-300">Pick a vibe that feels like you two.</p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -31,7 +31,7 @@ export function ThemePicker() {
               className={`flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 text-left text-sm font-medium transition ${
                 active
                   ? ""
-                  : "border-stone-200 bg-white text-stone-700 hover:border-stone-300 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:border-stone-500"
+                  : "border-[var(--border)] bg-card text-stone-700 hover:border-stone-300 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:border-stone-500"
               }`}
               style={active ? { borderColor: colors.border, backgroundColor: colors.bg, color: colors.text } : undefined}
             >

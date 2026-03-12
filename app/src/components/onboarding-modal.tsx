@@ -53,7 +53,7 @@ export function OnboardingModal({ hasPartner }: { hasPartner: boolean }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-4 pb-4 backdrop-blur-sm sm:items-center sm:pb-0">
-      <div className="w-full max-w-md rounded-3xl border border-stone-200 bg-white p-6 shadow-2xl dark:border-stone-700 dark:bg-stone-900 sm:p-8">
+      <div className="w-full max-w-md rounded-3xl border border-[var(--border)] bg-card p-6 shadow-2xl sm:p-8">
         {/* Progress dots */}
         <div className="mb-6 flex justify-center gap-1.5">
           {slides.map((_, i) => (
@@ -90,7 +90,7 @@ export function OnboardingModal({ hasPartner }: { hasPartner: boolean }) {
               )}
               <button
                 onClick={dismiss}
-                className="min-h-11 w-full rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-sm font-medium text-stone-800 transition hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700"
+                className="min-h-11 w-full rounded-xl border border-stone-300 bg-card px-4 py-2.5 text-sm font-medium text-stone-800 transition hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700"
               >
                 {hasPartner ? "Let's go" : "I'll invite them later"}
               </button>

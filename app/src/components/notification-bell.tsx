@@ -62,31 +62,32 @@ export function NotificationBell() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  async function handleToggle() {
-    const next = !open;
-    setOpen(next);
-    if (next && data && data.notifications.length > 0) {
-      await fetch("/api/notifications", { method: "POST" });
+  // Mark as read and clear badge only when the dropdown closes
+  function closeAndMarkRead() {
+    setOpen(false);
+    if (data && data.notifications.length > 0) {
+      fetch("/api/notifications", { method: "POST" }).catch(() => {});
       setData((prev) => prev ? { ...prev, count: prev.unreadNotes, notifications: [] } : prev);
     }
   }
 
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) closeAndMarkRead();
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [data]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const count = data?.count ?? 0;
+  const hasItems = data && (data.unreadNotes > 0 || data.notifications.length > 0);
 
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={handleToggle}
+        onClick={() => (open ? closeAndMarkRead() : setOpen(true))}
         aria-label={`Notifications${count > 0 ? ` (${count} unread)` : ""}`}
-        className="relative flex min-h-11 items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3 py-2 text-stone-700 transition hover:-translate-y-0.5 hover:border-stone-400 hover:text-stone-900 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
+        className="relative flex min-h-11 items-center gap-1.5 rounded-full border border-stone-300 bg-card px-3 py-2 text-stone-700 transition hover:-translate-y-0.5 hover:border-stone-400 hover:text-stone-900 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -100,7 +101,7 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-72 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-lg dark:border-stone-700 dark:bg-stone-900">
+        <div className="absolute right-0 top-full z-50 mt-2 w-72 overflow-hidden rounded-2xl border border-[var(--border)] bg-card shadow-lg">
           <div className="border-b border-stone-100 px-4 py-3 dark:border-stone-800">
             <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Notifications</p>
           </div>
@@ -108,7 +109,7 @@ export function NotificationBell() {
           {data && data.unreadNotes > 0 && (
             <Link
               href="/app/love-notes"
-              onClick={() => setOpen(false)}
+              onClick={closeAndMarkRead}
               className="flex items-center gap-3 border-b border-stone-100 px-4 py-3 hover:bg-stone-50 dark:border-stone-800 dark:hover:bg-stone-800"
             >
               <span className="text-lg leading-none">💌</span>
@@ -118,26 +119,26 @@ export function NotificationBell() {
             </Link>
           )}
 
-          {data?.notifications && data.notifications.length > 0 ? (
+          {data?.notifications && data.notifications.length > 0 && (
             data.notifications.map((notif) => {
               const { label, href } = notifMeta(notif.type, notif.payload);
               return (
                 <Link
                   key={notif.id}
                   href={href}
-                  onClick={() => setOpen(false)}
+                  onClick={closeAndMarkRead}
                   className="flex items-center gap-3 border-b border-stone-100 px-4 py-3 last:border-0 hover:bg-stone-50 dark:border-stone-800 dark:hover:bg-stone-800"
                 >
                   <span className="text-sm text-stone-700 dark:text-stone-300">{label}</span>
                 </Link>
               );
             })
-          ) : (
-            data && data.unreadNotes === 0 && (
-              <p className="px-4 py-6 text-center text-sm text-stone-500 dark:text-stone-400">
-                All caught up! 🎉
-              </p>
-            )
+          )}
+
+          {!hasItems && (
+            <p className="px-4 py-6 text-center text-sm text-stone-500 dark:text-stone-400">
+              All caught up! 🎉
+            </p>
           )}
         </div>
       )}
