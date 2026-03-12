@@ -32,14 +32,14 @@ export function ConfirmDangerAction({
   const colors =
     variant === "amber"
       ? {
-          trigger: "border-amber-300 bg-white text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:bg-stone-800 dark:text-amber-400 dark:hover:bg-amber-950",
+          trigger: "border-amber-300 bg-card text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:bg-stone-800 dark:text-amber-400 dark:hover:bg-amber-950",
           confirm: "bg-amber-600 text-white hover:bg-amber-700",
           box: "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40",
           hint: "text-amber-700 dark:text-amber-400",
           input: "border-amber-300 focus:border-amber-500 dark:border-amber-700",
         }
       : {
-          trigger: "border-red-300 bg-white text-red-700 hover:bg-red-50 dark:border-red-700 dark:bg-stone-800 dark:text-red-400 dark:hover:bg-red-950",
+          trigger: "border-red-300 bg-card text-red-700 hover:bg-red-50 dark:border-red-700 dark:bg-stone-800 dark:text-red-400 dark:hover:bg-red-950",
           confirm: "bg-red-600 text-white hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed",
           box: "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/40",
           hint: "text-red-700 dark:text-red-400",
@@ -81,7 +81,7 @@ export function ConfirmDangerAction({
           value={typed}
           onChange={(e) => setTyped(e.target.value)}
           placeholder={requireTyping}
-          className={`mt-3 w-full rounded-lg border bg-white px-3 py-2 text-sm text-stone-900 focus:outline-none dark:bg-stone-900 dark:text-stone-100 ${colors.input}`}
+          className={`mt-3 w-full rounded-lg border bg-card px-3 py-2 text-sm text-stone-900 focus:outline-none dark:text-stone-100 ${colors.input}`}
         />
       )}
       <div className="mt-3 flex gap-2">
@@ -101,7 +101,7 @@ export function ConfirmDangerAction({
         <button
           type="button"
           onClick={() => setStep("idle")}
-          className="min-h-10 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"
+          className="min-h-10 rounded-xl border border-stone-300 bg-card px-4 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"
         >
           Cancel
         </button>

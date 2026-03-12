@@ -51,7 +51,7 @@ export default async function ThisOrThatPage() {
       </div>
 
       {bothAnsweredCount > 0 && (
-        <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+        <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
           <p className="text-sm font-medium text-stone-500 dark:text-stone-400">Compatibility so far</p>
           <p className="mt-1 text-3xl font-bold text-stone-900 dark:text-stone-100">
             {Math.round((matchCount / bothAnsweredCount) * 100)}%

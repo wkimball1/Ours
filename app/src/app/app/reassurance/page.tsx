@@ -12,7 +12,7 @@ const templates = [
 ];
 
 const textareaClass =
-  "w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100";
+  "w-full rounded-xl border border-[var(--border)] bg-stone-50 px-3 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100";
 
 export default async function ReassurancePage() {
   const supabase = await createClient();
@@ -37,7 +37,7 @@ export default async function ReassurancePage() {
       </div>
 
       {/* Mood check-in */}
-      <form action={saveMoodAction} className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+      <form action={saveMoodAction} className="space-y-4 rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
         <MoodSlider />
         <textarea
           name="note"
@@ -45,7 +45,7 @@ export default async function ReassurancePage() {
           placeholder="Optional — what would help most right now?"
           className={textareaClass}
         />
-        <button className="min-h-11 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-50 active:scale-[0.99] dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
+        <button className="min-h-11 rounded-xl border border-stone-300 bg-card px-4 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-50 active:scale-[0.99] dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
           Save mood check-in
         </button>
       </form>
@@ -64,7 +64,7 @@ export default async function ReassurancePage() {
           </div>
 
           {/* Send a note */}
-          <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+          <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
             <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Send your partner a comforting note</p>
             <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">Write your own or pick from the templates below.</p>
 
@@ -75,7 +75,7 @@ export default async function ReassurancePage() {
                 placeholder="Write something warm..."
                 className={textareaClass}
               />
-              <button className="min-h-11 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-50 active:scale-[0.99] dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
+              <button className="min-h-11 rounded-xl border border-stone-300 bg-card px-4 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-50 active:scale-[0.99] dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
                 Send note
               </button>
             </form>
@@ -85,7 +85,7 @@ export default async function ReassurancePage() {
               {templates.map((t) => (
                 <form key={t} action={sendReassuranceMessageAction}>
                   <input type="hidden" name="message" value={t} />
-                  <button className="min-h-11 w-full rounded-xl border border-stone-200 bg-stone-50 p-3 text-left text-sm text-stone-700 transition hover:border-stone-300 hover:bg-stone-100 active:scale-[0.99] dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700">
+                  <button className="min-h-11 w-full rounded-xl border border-[var(--border)] bg-stone-50 p-3 text-left text-sm text-stone-700 transition hover:border-stone-300 hover:bg-stone-100 active:scale-[0.99] dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700">
                     {t}
                   </button>
                 </form>
@@ -94,7 +94,7 @@ export default async function ReassurancePage() {
           </div>
         </>
       ) : (
-        <div className="rounded-xl border border-stone-200 bg-stone-50 p-5 dark:border-stone-700 dark:bg-stone-800">
+        <div className="rounded-xl border border-[var(--border)] bg-stone-50 p-5 dark:bg-stone-800">
           <p className="text-base font-medium text-stone-700 dark:text-stone-200">Connect with a partner to send support</p>
           <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">Once your partner joins, you can ask for care and send reassurance notes to each other.</p>
         </div>
@@ -102,14 +102,14 @@ export default async function ReassurancePage() {
 
       {/* Recent reassurance activity */}
       {(notifications ?? []).length > 0 && (
-        <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+        <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
           <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Recent reassurance activity</p>
           <ul className="mt-3 space-y-2">
             {(notifications ?? []).map((n) => {
               const payload = (n.payload ?? {}) as { message?: string };
               const isRequest = n.type === "reassurance_request";
               return (
-                <li key={n.id} className="flex items-start gap-3 rounded-xl border border-stone-100 bg-stone-50 p-3 dark:border-stone-700 dark:bg-stone-800/70">
+                <li key={n.id} className="flex items-start gap-3 rounded-xl border border-stone-100 bg-stone-50 p-3 dark:bg-stone-800/70">
                   <span className="mt-0.5 text-base leading-none">{isRequest ? "🤗" : "💬"}</span>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm text-stone-800 dark:text-stone-100">

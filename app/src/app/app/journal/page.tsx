@@ -30,7 +30,7 @@ export default async function JournalPage() {
         <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">A shared space to write what&apos;s on your mind. No rules, no prompts — just you two.</p>
       </div>
 
-      <form action={saveJournalEntryAction} className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+      <form action={saveJournalEntryAction} className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
         <label htmlFor="journal-content" className="text-sm font-semibold text-stone-900 dark:text-stone-100">Write something</label>
         <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">It could be a thought, a feeling, a memory, or a plan. Whatever feels right.</p>
         <textarea
@@ -40,7 +40,7 @@ export default async function JournalPage() {
           required
           maxLength={5000}
           placeholder="Today I was thinking about..."
-          className="mt-3 w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
+          className="mt-3 w-full rounded-xl border border-[var(--border)] bg-stone-50 px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
         />
         <button className="btn-accent mt-3 min-h-11 rounded-xl px-5 py-2.5 text-sm font-semibold transition active:scale-[0.99]">
           Add to our journal
@@ -48,7 +48,7 @@ export default async function JournalPage() {
       </form>
 
       {(entries ?? []).length === 0 && (
-        <div className="rounded-xl border border-stone-200 bg-stone-50 p-5 text-center dark:border-stone-700 dark:bg-stone-800">
+        <div className="rounded-xl border border-[var(--border)] bg-stone-50 p-5 text-center dark:bg-stone-800">
           <p className="text-base font-medium text-stone-700 dark:text-stone-200">Your journal is waiting for its first page</p>
           <p className="mt-2 text-sm leading-relaxed text-stone-500 dark:text-stone-400">Some couples write about their favorite memory together. Others share what they&apos;re grateful for today. There&apos;s no wrong way to start — just say what&apos;s on your heart.</p>
         </div>
@@ -63,7 +63,7 @@ export default async function JournalPage() {
               key={entry.id}
               className={`rounded-2xl border p-5 shadow-sm ${
                 isMe
-                  ? "border-stone-200 bg-white dark:border-stone-700 dark:bg-stone-900"
+                  ? "border-[var(--border)] bg-card"
                   : "border-sky-200 bg-sky-50 dark:border-sky-800 dark:bg-sky-950"
               }`}
             >

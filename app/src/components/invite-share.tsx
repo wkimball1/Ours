@@ -21,15 +21,15 @@ export function InviteShare({ inviteLink }: { inviteLink: string | null }) {
   }
 
   return (
-    <div className="space-y-3 rounded-xl border border-stone-200 bg-stone-50 p-3">
+    <div className="space-y-3 rounded-xl border border-[var(--border)] bg-stone-50 p-3">
       <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Invite toolkit</p>
-      <div className="rounded-lg border border-stone-200 bg-white p-2 text-xs text-stone-700 break-all">{inviteLink || "Generate your private invite link to unlock this."}</div>
+      <div className="rounded-lg border border-[var(--border)] bg-card p-2 text-xs text-stone-700 break-all">{inviteLink || "Generate your private invite link to unlock this."}</div>
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
           onClick={() => copyText(inviteLink || "")}
           disabled={!inviteLink}
-          className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-800 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg border border-stone-300 bg-card px-3 py-1.5 text-xs font-medium text-stone-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Copy link
         </button>
@@ -37,7 +37,7 @@ export function InviteShare({ inviteLink }: { inviteLink: string | null }) {
           type="button"
           onClick={() => copyText(suggestedText)}
           disabled={!inviteLink}
-          className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-800 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg border border-stone-300 bg-card px-3 py-1.5 text-xs font-medium text-stone-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Copy ready-to-send text
         </button>

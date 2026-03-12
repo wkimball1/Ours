@@ -34,7 +34,7 @@ export default function GamesHub() {
           <Link
             key={game.href}
             href={game.href}
-            className="group rounded-2xl border border-stone-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:border-stone-700 dark:bg-stone-900"
+            className="group rounded-2xl border border-[var(--border)] bg-card p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
           >
             <span className="text-3xl">{game.emoji}</span>
             <h3 className="mt-3 font-semibold text-stone-900 dark:text-stone-100">{game.title}</h3>

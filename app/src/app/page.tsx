@@ -53,7 +53,7 @@ export default function LandingPage() {
         </div>
       </div>
 
-      <footer className="mt-16 border-t border-stone-200 pt-6 text-center text-xs text-stone-400 dark:border-stone-700">
+      <footer className="mt-16 border-t border-[var(--border)] pt-6 text-center text-xs text-stone-400">
         Ours — built for couples who choose each other, every day.
       </footer>
     </main>
@@ -62,7 +62,7 @@ export default function LandingPage() {
 
 function FeatureCard({ title, description }: { title: string; description: string }) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900/80">
+    <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
       <h3 className="font-semibold text-stone-900 dark:text-stone-100">{title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-300">{description}</p>
     </div>

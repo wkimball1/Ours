@@ -138,7 +138,7 @@ export function DrawingCanvas({ promptId, existingDrawing }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 shadow-sm dark:border-stone-700">
+      <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-stone-50 shadow-sm">
         <canvas
           ref={canvasRef}
           className={`h-[300px] w-full sm:h-[400px] ${drawingLocked ? "touch-auto" : "touch-none cursor-crosshair"}`}
@@ -169,7 +169,7 @@ export function DrawingCanvas({ promptId, existingDrawing }: Props) {
             onClick={() => setErasing((e) => !e)}
             aria-label="Eraser"
             title="Eraser"
-            className={`h-7 w-7 rounded-full border-2 transition flex items-center justify-center text-sm ${erasing ? "scale-110 border-stone-900 bg-stone-100 dark:border-stone-100 dark:bg-stone-700" : "border-stone-300 bg-white dark:border-stone-600 dark:bg-stone-800"}`}
+            className={`h-7 w-7 rounded-full border-2 transition flex items-center justify-center text-sm ${erasing ? "scale-110 border-stone-900 bg-stone-100 dark:border-stone-100 dark:bg-stone-700" : "border-stone-300 bg-card dark:border-stone-600 dark:bg-stone-800"}`}
           >
             ✕
           </button>
@@ -179,7 +179,7 @@ export function DrawingCanvas({ promptId, existingDrawing }: Props) {
         <select
           value={brushSize}
           onChange={(e) => setBrushSize(Number(e.target.value))}
-          className="rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm dark:border-stone-600 dark:bg-stone-800"
+          className="rounded-lg border border-stone-300 bg-card px-2 py-1.5 text-sm dark:border-stone-600 dark:bg-stone-800"
         >
           <option value={2}>Fine</option>
           <option value={4}>Medium</option>
@@ -190,7 +190,7 @@ export function DrawingCanvas({ promptId, existingDrawing }: Props) {
         {/* Scroll lock toggle */}
         <button
           onClick={() => setDrawingLocked((l) => !l)}
-          className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${drawingLocked ? "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300" : "border-stone-300 bg-white text-stone-600 hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300"}`}
+          className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${drawingLocked ? "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300" : "border-stone-300 bg-card text-stone-600 hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300"}`}
         >
           {drawingLocked ? "🔒 Scroll locked" : "Scroll ↕"}
         </button>
@@ -200,13 +200,13 @@ export function DrawingCanvas({ promptId, existingDrawing }: Props) {
         <button
           onClick={undo}
           disabled={history.length === 0}
-          className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50 disabled:opacity-40 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200"
+          className="rounded-xl border border-stone-300 bg-card px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50 disabled:opacity-40 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200"
         >
           Undo
         </button>
         <button
           onClick={clearCanvas}
-          className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200"
+          className="rounded-xl border border-stone-300 bg-card px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200"
         >
           Clear
         </button>

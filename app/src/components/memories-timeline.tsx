@@ -62,7 +62,7 @@ export function MemoriesTimeline({ items }: { items: TimelineItem[] }) {
 
   const btnBase = "rounded-full border px-3 py-1.5 text-xs font-semibold transition";
   const btnActive = "btn-accent shadow-sm";
-  const btnInactive = "border-stone-300 bg-white text-stone-600 hover:-translate-y-0.5 hover:border-stone-400 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700";
+  const btnInactive = "border-stone-300 bg-card text-stone-600 hover:-translate-y-0.5 hover:border-stone-400 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700";
 
   return (
     <div className="space-y-5">

@@ -16,10 +16,10 @@ export function SessionForm({
   const completionPct = Math.round((completed / total) * 100);
 
   return (
-    <form action={saveSessionResponsesAction} className="space-y-5 rounded-3xl border border-stone-200/90 bg-white p-4 shadow-sm sm:p-6 dark:border-stone-700 dark:bg-stone-900/85">
+    <form action={saveSessionResponsesAction} className="space-y-5 rounded-3xl border border-[var(--border)]/90 bg-card p-4 shadow-sm sm:p-6">
       <input type="hidden" name="session_id" value={sessionId} />
 
-      <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 dark:border-stone-700 dark:bg-stone-800/70">
+      <div className="rounded-2xl border border-[var(--border)] bg-stone-50 p-4 dark:bg-stone-800/70">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-medium text-stone-700 dark:text-stone-200">Progress</p>
           <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">
@@ -40,7 +40,7 @@ export function SessionForm({
         return (
           <div
             key={p.step_index}
-            className="space-y-3 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-700 dark:bg-stone-900"
+            className="space-y-3 rounded-2xl border border-[var(--border)] bg-card p-4 shadow-sm"
           >
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500 dark:text-stone-400">Step {p.step_index}</p>
             <p className="text-sm leading-relaxed text-stone-800 dark:text-stone-200">{p.prompt_text}</p>
@@ -57,7 +57,7 @@ export function SessionForm({
         );
       })}
 
-      <div className="sticky bottom-20 z-10 rounded-2xl border border-stone-200 bg-white/95 p-3 backdrop-blur dark:border-stone-700 dark:bg-stone-900/95 sm:bottom-6">
+      <div className="sticky bottom-20 z-10 rounded-2xl border border-[var(--border)] bg-card/95 p-3 backdrop-blur sm:bottom-6">
         <button className="btn-accent w-full min-h-11 rounded-xl px-4 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5 active:scale-[0.99]">
           Send my moment
         </button>

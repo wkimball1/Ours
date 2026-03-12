@@ -52,13 +52,13 @@ export default async function InvitePage({
           <button className="btn-accent w-full rounded-lg p-2">Accept invite</button>
         </form>
       ) : (
-        <div className="mt-6 space-y-3 rounded-xl border border-stone-200 bg-stone-50 p-4">
+        <div className="mt-6 space-y-3 rounded-xl border border-[var(--border)] bg-stone-50 p-4">
           <p className="text-sm text-stone-700">Create an account (or log in) first, then we’ll bring you right back to this invite.</p>
           <div className="flex gap-2">
             <Link className="btn-accent flex-1 rounded-lg px-3 py-2 text-center text-sm font-medium" href={`/signup?${query.toString()}`}>
               Create account
             </Link>
-            <Link className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-center text-sm font-medium text-stone-900" href={`/login?${query.toString()}`}>
+            <Link className="flex-1 rounded-lg border border-stone-300 bg-card px-3 py-2 text-center text-sm font-medium text-stone-900" href={`/login?${query.toString()}`}>
               Log in
             </Link>
           </div>

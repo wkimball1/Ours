@@ -107,20 +107,20 @@ export function ThisOrThatGame({ questions, myAnswers, myGuesses, partnerAnswers
             Pick what <span className="font-bold text-stone-900 dark:text-stone-100">you</span> prefer.
             {hasPartner && " Then guess your partner's pick."}
           </p>
-          <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+          <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
             <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-stone-400">{step.question.category}</p>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => pick("a")}
                 disabled={pending}
-                className="rounded-xl border-2 border-stone-200 bg-stone-50 p-4 text-center font-medium text-stone-900 transition hover:-translate-y-0.5 hover:border-stone-400 hover:shadow active:scale-[0.98] dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:border-stone-400"
+                className="rounded-xl border-2 border-[var(--border)] bg-stone-50 p-4 text-center font-medium text-stone-900 transition hover:-translate-y-0.5 hover:border-stone-400 hover:shadow active:scale-[0.98] dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:border-stone-400"
               >
                 {step.question.option_a}
               </button>
               <button
                 onClick={() => pick("b")}
                 disabled={pending}
-                className="rounded-xl border-2 border-stone-200 bg-stone-50 p-4 text-center font-medium text-stone-900 transition hover:-translate-y-0.5 hover:border-stone-400 hover:shadow active:scale-[0.98] dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:border-stone-400"
+                className="rounded-xl border-2 border-[var(--border)] bg-stone-50 p-4 text-center font-medium text-stone-900 transition hover:-translate-y-0.5 hover:border-stone-400 hover:shadow active:scale-[0.98] dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:border-stone-400"
               >
                 {step.question.option_b}
               </button>
@@ -198,7 +198,7 @@ export function ThisOrThatGame({ questions, myAnswers, myGuesses, partnerAnswers
                       ? matched
                         ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950"
                         : "border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950"
-                      : "border-stone-200 bg-stone-50 dark:border-stone-700 dark:bg-stone-800"
+                      : "border-[var(--border)] bg-stone-50 dark:bg-stone-800"
                   }`}
                 >
                   <p className="text-xs font-semibold uppercase tracking-wide text-stone-400 dark:text-stone-500 mb-1">{q.category}</p>

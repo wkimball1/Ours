@@ -34,7 +34,7 @@ export default async function SettingsPage({
 
   return (
     <section className="space-y-5">
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+      <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
         <h2 className="text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Settings</h2>
         <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">Keep this simple: your name/timezone for daily timing, and optional relationship dates for context.</p>
       </div>
@@ -55,7 +55,7 @@ export default async function SettingsPage({
       <AvatarUpload currentAvatarUrl={profile?.avatar_url ?? null} />
 
       <form action={saveSettingsAction} className="space-y-4">
-        <div className="space-y-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+        <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
           <h3 className="text-base font-semibold text-stone-900 dark:text-stone-100">Profile</h3>
 
           <label className="block space-y-1.5">
@@ -87,7 +87,7 @@ export default async function SettingsPage({
           </label>
         </div>
 
-        <div className="space-y-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+        <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
           <h3 className="text-base font-semibold text-stone-900 dark:text-stone-100">Relationship dates (optional)</h3>
 
           <label className="block space-y-1.5">
@@ -117,7 +117,7 @@ export default async function SettingsPage({
         </button>
       </form>
 
-      <form action={changePasswordAction} className="space-y-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+      <form action={changePasswordAction} className="space-y-3 rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
         <h3 className="text-base font-semibold text-stone-900 dark:text-stone-100">Change password</h3>
         <label className="block space-y-1.5">
           <span className="text-sm font-medium text-stone-800 dark:text-stone-200">New password</span>
@@ -149,7 +149,7 @@ export default async function SettingsPage({
       </form>
 
       {couple?.member2 && (
-        <div className="space-y-3 rounded-2xl border border-amber-200 bg-white p-5 shadow-sm dark:border-amber-800 dark:bg-stone-900">
+        <div className="space-y-3 rounded-2xl border border-amber-200 bg-card p-5 shadow-sm dark:border-amber-800">
           <h3 className="text-base font-semibold text-amber-700 dark:text-amber-400">Leave partner</h3>
           {partnerProfile?.avatar_url ? (
             <div className="flex items-center gap-3">
@@ -170,7 +170,7 @@ export default async function SettingsPage({
         </div>
       )}
 
-      <div className="space-y-3 rounded-2xl border border-red-200 bg-white p-5 shadow-sm dark:border-red-800 dark:bg-stone-900">
+      <div className="space-y-3 rounded-2xl border border-red-200 bg-card p-5 shadow-sm dark:border-red-800">
         <h3 className="text-base font-semibold text-red-700 dark:text-red-400">Delete account</h3>
         <p className="text-sm text-stone-600 dark:text-stone-300">This will remove your profile and unlink you from your shared space. Your partner will keep access to shared memories and content.</p>
         <ConfirmDangerAction

@@ -45,7 +45,7 @@ export default async function DrawPage() {
         <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">No artistic skill needed. Just have fun with it.</p>
       </div>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
+      <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
         <p className="text-sm font-medium text-stone-500 dark:text-stone-400">Today&apos;s prompt</p>
         <p className="mt-1 text-xl font-semibold text-stone-900 dark:text-stone-100">{todaysPrompt.prompt_text}</p>
       </div>
@@ -67,7 +67,7 @@ export default async function DrawPage() {
       )}
 
       {myDrawing && !partnerId && (
-        <p className="rounded-xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
+        <p className="rounded-xl border border-[var(--border)] bg-stone-50 p-3 text-sm text-stone-600">
           Invite your partner to draw together.
         </p>
       )}
@@ -80,13 +80,13 @@ export default async function DrawPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Yours</p>
-              <div className="overflow-hidden rounded-2xl border border-stone-200 shadow-sm dark:border-stone-700">
+              <div className="overflow-hidden rounded-2xl border border-[var(--border)] shadow-sm">
                 <img src={myDrawing.drawing_data} alt="Your drawing" className="w-full" />
               </div>
             </div>
             <div className="space-y-2">
               <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Theirs</p>
-              <div className="overflow-hidden rounded-2xl border border-stone-200 shadow-sm dark:border-stone-700">
+              <div className="overflow-hidden rounded-2xl border border-[var(--border)] shadow-sm">
                 <img src={partnerDrawing.drawing_data} alt="Partner drawing" className="w-full" />
               </div>
             </div>
