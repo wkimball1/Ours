@@ -23,6 +23,7 @@ const mobileItems = [
   { href: "/app/daily", label: "Daily" },
   { href: "/app/weekly", label: "Weekly" },
   { href: "/app/games", label: "Games" },
+  { href: "/app/love-notes", label: "Notes" },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -93,7 +94,7 @@ const mobileMoreHref = "/app/more";
 export function AppShell({ children, unreadNotes = 0 }: { children: React.ReactNode; unreadNotes?: number }) {
   const pathname = usePathname();
 
-  const moreActive = isActive(pathname, mobileMoreHref) || ["/app/love-notes", "/app/journal", "/app/memories", "/app/milestones", "/app/reassurance", "/app/settings"].some((h) => isActive(pathname, h));
+  const moreActive = isActive(pathname, mobileMoreHref) || ["/app/journal", "/app/memories", "/app/milestones", "/app/reassurance", "/app/settings"].some((h) => isActive(pathname, h));
 
   return (
     <main className="mx-auto max-w-5xl px-4 pb-24 pt-6 sm:px-6 sm:pb-10 sm:pt-8">
@@ -139,37 +140,38 @@ export function AppShell({ children, unreadNotes = 0 }: { children: React.ReactN
         aria-label="Primary mobile"
         className="fixed inset-x-0 bottom-0 z-30 border-t border-stone-200 bg-white/95 px-3 py-2 backdrop-blur sm:hidden dark:border-stone-700 dark:bg-stone-900/90"
       >
-        <div className="mx-auto grid max-w-xl grid-cols-5 gap-2">
+        <div className="mx-auto grid max-w-xl grid-cols-6 gap-1">
           {mobileItems.map((item) => {
             const active = isActive(pathname, item.href);
+            const showBadge = item.href === "/app/love-notes" && unreadNotes > 0;
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`min-h-11 rounded-xl px-2 py-2 text-center text-xs font-semibold transition active:scale-[0.98] ${
+                className={`relative min-h-11 rounded-xl px-1 py-2 text-center text-xs font-semibold transition active:scale-[0.98] ${
                   active
                     ? "btn-accent"
                     : "text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                 }`}
               >
                 {item.label}
+                {showBadge && (
+                  <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
+                )}
               </Link>
             );
           })}
           <Link
             href={mobileMoreHref}
             aria-current={moreActive ? "page" : undefined}
-            className={`relative min-h-11 rounded-xl px-2 py-2 text-center text-xs font-semibold transition active:scale-[0.98] ${
+            className={`relative min-h-11 rounded-xl px-1 py-2 text-center text-xs font-semibold transition active:scale-[0.98] ${
               moreActive
                 ? "btn-accent"
                 : "text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
             }`}
           >
             More
-            {unreadNotes > 0 && (
-              <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
-            )}
           </Link>
         </div>
       </nav>
