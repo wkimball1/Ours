@@ -569,18 +569,11 @@ export async function uploadAvatarAction(formData: FormData) {
   const user = await getMe();
   if (!user) return;
 
-  const file = formData.get("avatar") as File | null;
-  if (!file || !file.size) return;
+  const dataUrl = String(formData.get("avatar_data_url") || "");
+  if (!dataUrl.startsWith("data:image/")) return;
 
-  if (file.size > 1024 * 1024) {
-    return redirect("/app/settings?error=Photo+must+be+under+1MB");
-  }
-  if (!file.type.startsWith("image/")) {
-    return redirect("/app/settings?error=Please+upload+an+image+file");
-  }
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const dataUrl = `data:${file.type};base64,${buffer.toString("base64")}`;
+  // ~1.37 MB base64 ceiling for a 1 MB source image
+  if (dataUrl.length > 1_400_000) return;
 
   await supabase.from("profiles").update({ avatar_url: dataUrl }).eq("id", user.id);
   revalidatePath("/app");

@@ -1,7 +1,8 @@
-import { saveSettingsAction, changePasswordAction, deleteAccountAction, leavePartnerAction, uploadAvatarAction } from "@/app/actions";
+import { saveSettingsAction, changePasswordAction, deleteAccountAction, leavePartnerAction } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
 import { getMyData } from "@/lib/ours";
 import { ThemePicker } from "@/components/theme-picker";
+import { AvatarUpload } from "@/components/avatar-upload";
 
 const tzSuggestions = [
   "America/New_York",
@@ -50,25 +51,7 @@ export default async function SettingsPage({
 
       <ThemePicker />
 
-      <form action={uploadAvatarAction} encType="multipart/form-data" className="space-y-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
-        <h3 className="text-base font-semibold text-stone-900 dark:text-stone-100">Your photo</h3>
-        <div className="flex items-center gap-4">
-          {profile?.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={profile.avatar_url} alt="Your photo" className="h-16 w-16 rounded-full object-cover ring-2 ring-stone-200 dark:ring-stone-700" />
-          ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-stone-100 text-2xl dark:bg-stone-800">🤍</div>
-          )}
-          <div className="flex-1">
-            <label className="block space-y-1.5">
-              <span className="text-sm font-medium text-stone-800 dark:text-stone-200">Upload a new photo</span>
-              <input name="avatar" type="file" accept="image/*" className="block w-full text-sm text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-stone-100 file:px-3 file:py-1.5 file:text-sm file:font-medium dark:text-stone-400 dark:file:bg-stone-700 dark:file:text-stone-200" />
-            </label>
-            <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">Max 1 MB. Your partner will see this on their home screen.</p>
-          </div>
-        </div>
-        <button className="min-h-11 rounded-xl px-4 py-2.5 text-sm font-semibold btn-accent transition">Save photo</button>
-      </form>
+      <AvatarUpload currentAvatarUrl={profile?.avatar_url ?? null} />
 
       <form action={saveSettingsAction} className="space-y-4">
         <div className="space-y-3 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
