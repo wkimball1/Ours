@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getMyData } from "@/lib/ours";
 import { sendLoveNoteAction, markNoteReadAction } from "@/app/actions";
+import { LocalTime } from "@/components/local-time";
 
 export default async function LoveNotesPage() {
   const supabase = await createClient();
@@ -59,7 +60,7 @@ export default async function LoveNotesPage() {
               <p className="text-stone-900 dark:text-stone-100">&ldquo;{note.message}&rdquo;</p>
               <div className="mt-3 flex items-center justify-between">
                 <p className="text-xs text-stone-500 dark:text-stone-400">
-                  {new Date(note.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                  <LocalTime dateStr={note.created_at} />
                 </p>
                 <form action={markNoteReadAction}>
                   <input type="hidden" name="note_id" value={note.id} />
@@ -80,7 +81,7 @@ export default async function LoveNotesPage() {
             <div key={note.id} className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-700 dark:bg-stone-900">
               <p className="text-stone-700 dark:text-stone-200">&ldquo;{note.message}&rdquo;</p>
               <p className="mt-2 text-xs text-stone-400">
-                {new Date(note.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                <LocalTime dateStr={note.created_at} />
               </p>
             </div>
           ))}
@@ -94,7 +95,7 @@ export default async function LoveNotesPage() {
             <div key={note.id} className="rounded-2xl border border-stone-200 bg-stone-50 p-5 dark:border-stone-700 dark:bg-stone-800">
               <p className="text-sm text-stone-600 dark:text-stone-300">&ldquo;{note.message}&rdquo;</p>
               <p className="mt-2 text-xs text-stone-400">
-                {new Date(note.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                <LocalTime dateStr={note.created_at} />
                 {note.read_at ? " · Read" : " · Not yet read"}
               </p>
             </div>
