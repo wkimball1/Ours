@@ -44,6 +44,9 @@
     --hero-from: #1e1e1e;
     --hero-via: #2a2a2a;
     --hero-to: #3a3a3a;
+    --bg-glow-1: #1a1a1f;
+    --bg-glow-2: #16151a;
+    --bg-glow-3: #131520;
   }
   [data-theme="rose"] {
     --background: #160d0f;
@@ -52,6 +55,9 @@
     --hero-from: #4c0519;
     --hero-via: #881337;
     --hero-to: #be123c;
+    --bg-glow-1: #2a0f15;
+    --bg-glow-2: #1e0b10;
+    --bg-glow-3: #200d12;
   }
   [data-theme="lavender"] {
     --background: #100e18;
@@ -60,6 +66,9 @@
     --hero-from: #2e1065;
     --hero-via: #4c1d95;
     --hero-to: #6d28d9;
+    --bg-glow-1: #1e1630;
+    --bg-glow-2: #160f28;
+    --bg-glow-3: #1a1232;
   }
   [data-theme="ocean"] {
     --background: #0c1219;
@@ -68,6 +77,9 @@
     --hero-from: #082f49;
     --hero-via: #0c4a6e;
     --hero-to: #0369a1;
+    --bg-glow-1: #101e2e;
+    --bg-glow-2: #0c1824;
+    --bg-glow-3: #0e1c2c;
   }
   [data-theme="sunset"] {
     --background: #160e09;
@@ -76,6 +88,9 @@
     --hero-from: #431407;
     --hero-via: #7c2d12;
     --hero-to: #c2410c;
+    --bg-glow-1: #271510;
+    --bg-glow-2: #1e100a;
+    --bg-glow-3: #221208;
   }
   [data-theme="forest"] {
     --background: #0c1410;
@@ -84,6 +99,9 @@
     --hero-from: #052e16;
     --hero-via: #14532d;
     --hero-to: #15803d;
+    --bg-glow-1: #101e14;
+    --bg-glow-2: #0c1810;
+    --bg-glow-3: #0e1c12;
   }
   [data-theme="berry"] {
     --background: #140d16;
@@ -92,6 +110,9 @@
     --hero-from: #2e0533;
     --hero-via: #4a044e;
     --hero-to: #a21caf;
+    --bg-glow-1: #261030;
+    --bg-glow-2: #1e0a24;
+    --bg-glow-3: #220e2a;
   }
   [data-theme="midnight"] {
     --background: #0c1120;
@@ -100,6 +121,9 @@
     --hero-from: #0c1a3d;
     --hero-via: #172554;
     --hero-to: #1e40af;
+    --bg-glow-1: #111828;
+    --bg-glow-2: #0e1422;
+    --bg-glow-3: #0e1630;
   }
 }
 

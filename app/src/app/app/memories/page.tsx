@@ -122,9 +122,10 @@ export default async function MemoriesPage() {
       </div>
 
       {timeline.length === 0 ? (
-        <div className="rounded-xl border border-[var(--border)] bg-stone-50 p-5 text-center dark:bg-stone-800">
-          <p className="text-base font-medium text-stone-700 dark:text-stone-200">Your story starts here</p>
-          <p className="mt-2 text-sm leading-relaxed text-stone-500 dark:text-stone-400">Every love note you send, every game you play, every moment you share — it all shows up here as your timeline together.</p>
+        <div className="rounded-2xl border border-[var(--border)] bg-stone-50 p-6 text-center dark:bg-stone-800/50">
+          <p className="text-3xl">🎞️</p>
+          <p className="mt-3 text-base font-semibold text-stone-800 dark:text-stone-100">Your story starts here</p>
+          <p className="mt-2 text-sm leading-relaxed text-stone-500 dark:text-stone-400">Every love note, game, drawing, and daily moment you share shows up here as your timeline together. Start anywhere — it all counts.</p>
         </div>
       ) : (
         <MemoriesTimeline items={timeline} />

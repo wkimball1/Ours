@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { getMyData } from "@/lib/ours";
-import { saveJournalEntryAction, deleteJournalEntryAction } from "@/app/actions";
+import { deleteJournalEntryAction } from "@/app/actions";
 import { LocalTime } from "@/components/local-time";
+import { JournalForm } from "@/components/journal-form";
 
 export default async function JournalPage() {
   const supabase = await createClient();
@@ -30,27 +31,14 @@ export default async function JournalPage() {
         <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">A shared space to write what&apos;s on your mind. No rules, no prompts — just you two.</p>
       </div>
 
-      <form action={saveJournalEntryAction} className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
-        <label htmlFor="journal-content" className="text-sm font-semibold text-stone-900 dark:text-stone-100">Write something</label>
-        <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">It could be a thought, a feeling, a memory, or a plan. Whatever feels right.</p>
-        <textarea
-          id="journal-content"
-          name="content"
-          rows={4}
-          required
-          maxLength={5000}
-          placeholder="Today I was thinking about..."
-          className="mt-3 w-full rounded-xl border border-[var(--border)] bg-stone-50 px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
-        />
-        <button className="btn-accent mt-3 min-h-11 rounded-xl px-5 py-2.5 text-sm font-semibold transition active:scale-[0.99]">
-          Add to our journal
-        </button>
-      </form>
+      <JournalForm />
 
       {(entries ?? []).length === 0 && (
-        <div className="rounded-xl border border-[var(--border)] bg-stone-50 p-5 text-center dark:bg-stone-800">
-          <p className="text-base font-medium text-stone-700 dark:text-stone-200">Your journal is waiting for its first page</p>
-          <p className="mt-2 text-sm leading-relaxed text-stone-500 dark:text-stone-400">Some couples write about their favorite memory together. Others share what they&apos;re grateful for today. There&apos;s no wrong way to start — just say what&apos;s on your heart.</p>
+        <div className="rounded-2xl border border-[var(--border)] bg-stone-50 p-6 text-center dark:bg-stone-800/50">
+          <p className="text-3xl">📓</p>
+          <p className="mt-3 text-base font-semibold text-stone-800 dark:text-stone-100">Your journal is waiting for its first page</p>
+          <p className="mt-2 text-sm leading-relaxed text-stone-500 dark:text-stone-400">Some couples write about a favorite memory. Others share what they&apos;re grateful for today. There&apos;s no wrong way to start — just say what&apos;s on your heart.</p>
+          <p className="mt-3 text-xs text-stone-400 dark:text-stone-500">Use the form above to write your first entry ↑</p>
         </div>
       )}
 

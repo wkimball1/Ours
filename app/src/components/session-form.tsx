@@ -1,4 +1,5 @@
 import { saveSessionResponsesAction } from "@/app/actions";
+import { SubmitButton } from "@/components/submit-button";
 
 type Prompt = { step_index: number; prompt_text: string };
 
@@ -58,9 +59,12 @@ export function SessionForm({
       })}
 
       <div className="sticky bottom-20 z-10 rounded-2xl border border-[var(--border)] bg-card/95 p-3 backdrop-blur sm:bottom-6">
-        <button className="btn-accent w-full min-h-11 rounded-xl px-4 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5 active:scale-[0.99]">
+        <SubmitButton
+          pendingText="Sending…"
+          className="btn-accent w-full min-h-11 rounded-xl px-4 py-2.5 text-sm font-semibold hover:-translate-y-0.5 active:scale-[0.99]"
+        >
           Send my moment
-        </button>
+        </SubmitButton>
       </div>
 
       <p className="text-sm text-stone-500 dark:text-stone-400">No perfect words needed — one honest minute is enough.</p>

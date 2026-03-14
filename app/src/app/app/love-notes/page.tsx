@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getMyData } from "@/lib/ours";
 import { sendLoveNoteAction, markNoteReadAction } from "@/app/actions";
 import { LocalTime } from "@/components/local-time";
+import { SubmitButton } from "@/components/submit-button";
 
 export default async function LoveNotesPage() {
   const supabase = await createClient();
@@ -37,16 +38,20 @@ export default async function LoveNotesPage() {
             required
             className="mt-3 w-full rounded-xl border border-[var(--border)] bg-stone-50 px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
           />
-          <button className="btn-accent mt-3 min-h-11 rounded-xl px-5 py-2.5 text-sm font-semibold transition active:scale-[0.99]">
+          <SubmitButton
+            pendingText="Sending…"
+            className="btn-accent mt-3 min-h-11 rounded-xl px-5 py-2.5 text-sm font-semibold active:scale-[0.99]"
+          >
             Leave note
-          </button>
+          </SubmitButton>
         </form>
       )}
 
       {!hasPartner && (
-        <div className="rounded-xl border border-[var(--border)] bg-stone-50 p-5 dark:bg-stone-800">
-          <p className="text-base font-medium text-stone-700 dark:text-stone-200">Notes are better with two</p>
-          <p className="mt-2 text-sm leading-relaxed text-stone-500 dark:text-stone-400">Even a two-word note can change someone&apos;s whole day. Invite your partner so you can start surprising each other.</p>
+        <div className="rounded-2xl border border-[var(--border)] bg-stone-50 p-6 text-center dark:bg-stone-800/50">
+          <p className="text-3xl">💌</p>
+          <p className="mt-3 text-base font-semibold text-stone-800 dark:text-stone-100">Notes are better with two</p>
+          <p className="mt-2 text-sm leading-relaxed text-stone-500 dark:text-stone-400">Even two words can change someone&apos;s whole day. Invite your partner so you can start surprising each other.</p>
         </div>
       )}
 
