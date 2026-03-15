@@ -34,7 +34,10 @@ export default async function WeeklyPage() {
   return (
     <section className="space-y-5">
       <div className="space-y-1">
-        <h2 className="text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Weekly reset</h2>
+        <div className="flex items-baseline gap-2">
+          <h2 className="text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Weekly reset</h2>
+          <span className="text-xs font-medium text-stone-400 dark:text-stone-500">~8 min</span>
+        </div>
         <p className="text-sm text-stone-600 dark:text-stone-300">A gentle reset for your relationship, any day that works this week.</p>
       </div>
 

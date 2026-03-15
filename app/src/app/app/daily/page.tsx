@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ensureDailySession, getMyData, getPartnerId } from "@/lib/ours";
 import { SessionForm } from "@/components/session-form";
@@ -35,7 +36,10 @@ export default async function DailyPage() {
   return (
     <section className="space-y-5">
       <div className="space-y-1">
-        <h2 className="text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Today’s tiny moment</h2>
+        <div className="flex items-baseline gap-2">
+          <h2 className="text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Today’s tiny moment</h2>
+          <span className="text-xs font-medium text-stone-400 dark:text-stone-500">~2 min</span>
+        </div>
         <p className="text-sm text-stone-600 dark:text-stone-300">No perfect words needed — one honest minute is enough.</p>
       </div>
 
@@ -53,8 +57,22 @@ export default async function DailyPage() {
 
       <SessionForm sessionId={session.id} prompts={prompts ?? []} existing={existing} />
 
-      {session.status !== "unlocked" ? (
-        <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Your note is in. We’ll let you know when your person’s note arrives.</p>
+      {session.status !== "unlocked" && mineCount >= totalPrompts && totalPrompts > 0 ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950">
+          <p className="text-sm font-medium text-amber-900 dark:text-amber-100">Your note is in ✨ We&apos;ll let you know when your person&apos;s note arrives.</p>
+          <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">While you wait…</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Link href="/app/love-notes" className="rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-900 transition hover:bg-amber-50 dark:border-amber-700 dark:bg-amber-900 dark:text-amber-100">
+              Leave a love note
+            </Link>
+            <Link href="/app/games" className="rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-900 transition hover:bg-amber-50 dark:border-amber-700 dark:bg-amber-900 dark:text-amber-100">
+              Play a game
+            </Link>
+            <Link href="/app/reassurance" className="rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-900 transition hover:bg-amber-50 dark:border-amber-700 dark:bg-amber-900 dark:text-amber-100">
+              Check your mood
+            </Link>
+          </div>
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">

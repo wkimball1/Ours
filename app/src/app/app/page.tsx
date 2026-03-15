@@ -3,6 +3,7 @@ import { createCoupleAction, generateInviteAction } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
 import { ensureDailySession, ensureWeeklySession, getMyData, getPartnerId } from "@/lib/ours";
 import { InviteShare } from "@/components/invite-share";
+import { OnboardingModal } from "@/components/onboarding-modal";
 
 function timeAgo(dateStr: string): string {
   const now = Date.now();
@@ -86,6 +87,8 @@ export default async function AppHomePage() {
     : null;
 
   return (
+    <>
+    <OnboardingModal hasPartner={!!couple.member2} />
     <section className="grid gap-4 sm:gap-5 md:grid-cols-2">
       <div className="hero-card rounded-3xl border border-white/10 p-6 text-white md:col-span-2 sm:p-7">
         <div className="flex items-center justify-between">
@@ -200,6 +203,7 @@ export default async function AppHomePage() {
         </div>
       </div>
     </section>
+    </>
   );
 }
 

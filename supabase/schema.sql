@@ -79,7 +79,7 @@ create table if not exists notifications (
   couple_id uuid not null references couples(id) on delete cascade,
   to_user_id uuid not null references profiles(id) on delete cascade,
   from_user_id uuid references profiles(id) on delete set null,
-  type text not null check (type in ('reassurance_request','reassurance_message','system')),
+  type text not null check (type in ('reassurance_request','reassurance_message','system','session_unlocked','game_answered')),
   payload jsonb not null default '{}'::jsonb,
   read_at timestamptz,
   created_at timestamptz not null default now()

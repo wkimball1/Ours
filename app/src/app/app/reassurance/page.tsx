@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getMyData } from "@/lib/ours";
 import { MoodSlider } from "@/components/mood-slider";
 import { LocalTime } from "@/components/local-time";
+import { SubmitButton } from "@/components/submit-button";
 
 const templates = [
   "I'm right here with you. We'll move through this together.",
@@ -45,9 +46,12 @@ export default async function ReassurancePage() {
           placeholder="Optional — what would help most right now?"
           className={textareaClass}
         />
-        <button className="min-h-11 rounded-xl border border-stone-300 bg-card px-4 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-50 active:scale-[0.99] dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
+        <SubmitButton
+          pendingText="Saving…"
+          className="min-h-11 rounded-xl border border-stone-300 bg-card px-4 py-2 text-sm font-medium text-stone-800 hover:-translate-y-0.5 hover:bg-stone-50 active:scale-[0.99] dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700"
+        >
           Save mood check-in
-        </button>
+        </SubmitButton>
       </form>
 
       {hasPartner ? (
@@ -57,9 +61,12 @@ export default async function ReassurancePage() {
             <p className="text-sm font-semibold text-rose-900 dark:text-rose-100">Need a little extra care?</p>
             <p className="mt-1 text-sm text-rose-700 dark:text-rose-300">Send your partner a quiet signal that you could use some support.</p>
             <form action={requestReassuranceAction}>
-              <button className="mt-3 min-h-11 rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 active:scale-[0.99]">
+              <SubmitButton
+                pendingText="Sending…"
+                className="mt-3 min-h-11 rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rose-700 active:scale-[0.99]"
+              >
                 Ask for care
-              </button>
+              </SubmitButton>
             </form>
           </div>
 
@@ -75,9 +82,12 @@ export default async function ReassurancePage() {
                 placeholder="Write something warm..."
                 className={textareaClass}
               />
-              <button className="min-h-11 rounded-xl border border-stone-300 bg-card px-4 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-50 active:scale-[0.99] dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
+              <SubmitButton
+                pendingText="Sending…"
+                className="min-h-11 rounded-xl border border-stone-300 bg-card px-4 py-2 text-sm font-medium text-stone-800 hover:-translate-y-0.5 hover:bg-stone-50 active:scale-[0.99] dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700"
+              >
                 Send note
-              </button>
+              </SubmitButton>
             </form>
 
             <div className="mt-4 space-y-2">
