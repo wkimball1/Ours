@@ -1,6 +1,6 @@
 import { requestReassuranceAction, saveMoodAction, sendReassuranceMessageAction } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
-import { getMyData } from "@/lib/ours";
+import { getMyData, getPartnerId } from "@/lib/ours";
 import { MoodSlider } from "@/components/mood-slider";
 import { LocalTime } from "@/components/local-time";
 import { SubmitButton } from "@/components/submit-button";
@@ -15,18 +15,149 @@ const templates = [
 const textareaClass =
   "w-full rounded-xl border border-[var(--border)] bg-stone-50 px-3 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-stone-400 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100";
 
+type MoodEntry = { user_id: string; mood_level: number; created_at: string };
+
+function MoodChart({
+  moods,
+  userId,
+  partnerId,
+  partnerName,
+}: {
+  moods: MoodEntry[];
+  userId: string;
+  partnerId: string | null;
+  partnerName: string | null;
+}) {
+  // Build last-14-day date buckets
+  const days: string[] = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push(d.toISOString().slice(0, 10));
+  }
+
+  // Average mood per user per day
+  function avgByDay(uid: string) {
+    return days.map((day) => {
+      const entries = moods.filter(
+        (m) => m.user_id === uid && m.created_at.slice(0, 10) === day
+      );
+      if (!entries.length) return null;
+      return entries.reduce((s, e) => s + e.mood_level, 0) / entries.length;
+    });
+  }
+
+  const myData = avgByDay(userId);
+  const partnerData = partnerId ? avgByDay(partnerId) : null;
+
+  const hasAnyData = myData.some((v) => v !== null) || (partnerData && partnerData.some((v) => v !== null));
+  if (!hasAnyData) return null;
+
+  const W = 280;
+  const H = 72;
+  const PAD = 6;
+  const innerW = W - PAD * 2;
+  const innerH = H - PAD * 2;
+
+  function toPoint(i: number, val: number): [number, number] {
+    const x = PAD + (i / 13) * innerW;
+    const y = PAD + (1 - (val - 1) / 9) * innerH;
+    return [x, y];
+  }
+
+  function toPath(data: (number | null)[]): string {
+    const segments: string[] = [];
+    let inSegment = false;
+    for (let i = 0; i < data.length; i++) {
+      const v = data[i];
+      if (v === null) { inSegment = false; continue; }
+      const [x, y] = toPoint(i, v);
+      if (!inSegment) { segments.push(`M ${x} ${y}`); inSegment = true; }
+      else { segments.push(`L ${x} ${y}`); }
+    }
+    return segments.join(" ");
+  }
+
+  function toDots(data: (number | null)[], color: string) {
+    return data.map((v, i) => {
+      if (v === null) return null;
+      const [x, y] = toPoint(i, v);
+      return <circle key={i} cx={x} cy={y} r={3} fill={color} />;
+    });
+  }
+
+  const myPath = toPath(myData);
+  const partnerPath = partnerData ? toPath(partnerData) : "";
+
+  return (
+    <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
+      <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Mood over the last 2 weeks</p>
+      <div className="mt-3 flex items-center gap-4 text-xs text-stone-500 dark:text-stone-400">
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-[var(--accent)]" />
+          You
+        </span>
+        {partnerData && (
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-rose-400" />
+            {partnerName || "Partner"}
+          </span>
+        )}
+        <span className="ml-auto">1 = low · 10 = great</span>
+      </div>
+      <div className="mt-3 overflow-hidden rounded-xl bg-stone-50 dark:bg-stone-800/60">
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" aria-hidden="true">
+          {/* Gridlines at 2.5, 5, 7.5 */}
+          {[2.5, 5, 7.5].map((v) => {
+            const [, y] = toPoint(0, v);
+            return <line key={v} x1={PAD} y1={y} x2={W - PAD} y2={y} stroke="#d1d5db" strokeWidth="0.5" strokeDasharray="3,3" />;
+          })}
+          {partnerData && partnerPath && (
+            <path d={partnerPath} fill="none" stroke="#fb7185" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          )}
+          {partnerData && toDots(partnerData, "#fb7185")}
+          {myPath && (
+            <path d={myPath} fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          )}
+          {toDots(myData, "var(--accent)")}
+        </svg>
+      </div>
+      <div className="mt-1.5 flex justify-between text-[10px] text-stone-400">
+        <span>14 days ago</span>
+        <span>Today</span>
+      </div>
+    </div>
+  );
+}
+
 export default async function ReassurancePage() {
   const supabase = await createClient();
   const { user, couple } = await getMyData();
   if (!user || !couple) return <p>Set up your couple first.</p>;
 
-  const { data: notifications } = await supabase
-    .from("notifications")
-    .select("id, type, payload, created_at")
-    .eq("to_user_id", user.id)
-    .in("type", ["reassurance_request", "reassurance_message"])
-    .order("created_at", { ascending: false })
-    .limit(10);
+  const partnerId = getPartnerId(couple, user.id);
+
+  const fourteenDaysAgo = new Date();
+  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+
+  const [{ data: notifications }, { data: moods }, { data: partnerProfile }] = await Promise.all([
+    supabase
+      .from("notifications")
+      .select("id, type, payload, created_at")
+      .eq("to_user_id", user.id)
+      .in("type", ["reassurance_request", "reassurance_message"])
+      .order("created_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("moods")
+      .select("user_id, mood_level, created_at")
+      .eq("couple_id", couple.id)
+      .gte("created_at", fourteenDaysAgo.toISOString())
+      .order("created_at", { ascending: true }),
+    partnerId
+      ? supabase.from("profiles").select("first_name").eq("id", partnerId).single()
+      : Promise.resolve({ data: null }),
+  ]);
 
   const hasPartner = !!couple.member2;
 
@@ -53,6 +184,16 @@ export default async function ReassurancePage() {
           Save mood check-in
         </SubmitButton>
       </form>
+
+      {/* Mood history chart */}
+      {(moods ?? []).length > 0 && (
+        <MoodChart
+          moods={moods ?? []}
+          userId={user.id}
+          partnerId={partnerId}
+          partnerName={partnerProfile?.first_name ?? null}
+        />
+      )}
 
       {hasPartner ? (
         <>
@@ -95,9 +236,12 @@ export default async function ReassurancePage() {
               {templates.map((t) => (
                 <form key={t} action={sendReassuranceMessageAction}>
                   <input type="hidden" name="message" value={t} />
-                  <button className="min-h-11 w-full rounded-xl border border-[var(--border)] bg-stone-50 p-3 text-left text-sm text-stone-700 transition hover:border-stone-300 hover:bg-stone-100 active:scale-[0.99] dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700">
+                  <SubmitButton
+                    pendingText="Sending…"
+                    className="min-h-11 w-full rounded-xl border border-[var(--border)] bg-stone-50 p-3 text-left text-sm text-stone-700 hover:border-stone-300 hover:bg-stone-100 active:scale-[0.99] dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
+                  >
                     {t}
-                  </button>
+                  </SubmitButton>
                 </form>
               ))}
             </div>

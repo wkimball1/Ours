@@ -1,9 +1,11 @@
-import { saveSettingsAction, changePasswordAction, deleteAccountAction, leavePartnerAction } from "@/app/actions";
+import { saveSettingsAction, changePasswordAction, deleteAccountAction, leavePartnerAction, saveNotificationPrefsAction } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
 import { getMyData } from "@/lib/ours";
 import { ThemePicker } from "@/components/theme-picker";
+import { DarkModeToggle } from "@/components/dark-mode-toggle";
 import { AvatarUpload } from "@/components/avatar-upload";
 import { ConfirmDangerAction } from "@/components/confirm-danger-action";
+import { SubmitButton } from "@/components/submit-button";
 
 const tzSuggestions = [
   "America/New_York",
@@ -23,7 +25,8 @@ export default async function SettingsPage({
   if (!user) return <p>Sign in first.</p>;
 
   const params = await searchParams;
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("*, notification_prefs").eq("id", user.id).single();
+  const notifPrefs = (profile?.notification_prefs ?? {}) as Record<string, boolean>;
 
   const partnerId = couple
     ? couple.member1 === user.id ? couple.member2 : couple.member1
@@ -49,6 +52,8 @@ export default async function SettingsPage({
           Password updated successfully.
         </div>
       )}
+
+      <DarkModeToggle />
 
       <ThemePicker />
 
@@ -115,6 +120,35 @@ export default async function SettingsPage({
         <button className="min-h-11 rounded-xl px-4 py-2.5 text-sm font-semibold btn-accent transition">
           Save settings
         </button>
+      </form>
+
+      <form action={saveNotificationPrefsAction} className="space-y-4 rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
+        <h3 className="text-base font-semibold text-stone-900 dark:text-stone-100">Email notifications</h3>
+        <p className="text-sm text-stone-500 dark:text-stone-400">Choose which email notifications you receive. You'll always see everything in-app.</p>
+        {[
+          { name: "email_love_note", label: "Love notes", description: "When your partner leaves you a note" },
+          { name: "email_reassurance", label: "Reassurance", description: "Care requests and comforting messages" },
+          { name: "email_session_unlocked", label: "Session unlocked", description: "When your daily or weekly session unlocks" },
+        ].map((pref) => (
+          <label key={pref.name} className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              name={pref.name}
+              defaultChecked={notifPrefs[pref.name] !== false}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-stone-300 accent-[var(--accent)] dark:border-stone-600"
+            />
+            <div>
+              <p className="text-sm font-medium text-stone-800 dark:text-stone-200">{pref.label}</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400">{pref.description}</p>
+            </div>
+          </label>
+        ))}
+        <SubmitButton
+          pendingText="Saving…"
+          className="min-h-11 rounded-xl px-4 py-2.5 text-sm font-semibold btn-accent transition"
+        >
+          Save notification preferences
+        </SubmitButton>
       </form>
 
       <form action={changePasswordAction} className="space-y-3 rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">

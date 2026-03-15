@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { createCoupleAction, generateInviteAction } from "@/app/actions";
+import { createCoupleAction, generateInviteAction, sendThinkingOfYouAction } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
 import { ensureDailySession, ensureWeeklySession, getMyData, getPartnerId } from "@/lib/ours";
 import { InviteShare } from "@/components/invite-share";
 import { OnboardingModal } from "@/components/onboarding-modal";
+import { SubmitButton } from "@/components/submit-button";
 
 function timeAgo(dateStr: string): string {
   const now = Date.now();
@@ -62,11 +63,14 @@ export default async function AppHomePage() {
     partnerPresence = partnerProfile;
   }
 
-  const { count: unlockedCount } = await supabase
-    .from("sessions")
-    .select("*", { count: "exact", head: true })
-    .eq("couple_id", couple.id)
-    .eq("status", "unlocked");
+  const [{ count: unlockedCount }, { data: myProfile }] = await Promise.all([
+    supabase
+      .from("sessions")
+      .select("*", { count: "exact", head: true })
+      .eq("couple_id", couple.id)
+      .eq("status", "unlocked"),
+    supabase.from("profiles").select("first_name, avatar_url, timezone").eq("id", user.id).single(),
+  ]);
 
   const [dailyState, weeklyState] = await Promise.all([
     getSessionState(supabase, daily.id, user.id, partnerId, 3),
@@ -129,6 +133,43 @@ export default async function AppHomePage() {
         </div>
       )}
 
+      {/* Profile completion nudge */}
+      {(() => {
+        const missing: string[] = [];
+        if (!myProfile?.first_name) missing.push("your first name");
+        if (!couple.relationship_start_date) missing.push("your relationship start date");
+        if (!couple.next_visit_date) missing.push("your next visit date");
+        if (!myProfile?.avatar_url) missing.push("a profile photo");
+        if (missing.length >= 2) {
+          return (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm dark:border-amber-800 dark:bg-amber-950 md:col-span-2">
+              <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">Make this space more yours</p>
+              <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">Add {missing.slice(0, 2).join(" and ")} to get more out of Ours.</p>
+              <Link href="/app/settings" className="mt-3 inline-flex min-h-9 items-center rounded-lg border border-amber-300 bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-200 dark:border-amber-700 dark:bg-amber-900 dark:text-amber-200">
+                Go to Settings →
+              </Link>
+            </div>
+          );
+        }
+        return null;
+      })()}
+
+      {/* Thinking of you tap */}
+      {!!couple.member2 && (
+        <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
+          <p className="text-base font-semibold text-stone-900 dark:text-stone-100">Thinking of you</p>
+          <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">Send {partnerPresence?.first_name || "your partner"} a quiet tap — no words needed.</p>
+          <form action={sendThinkingOfYouAction} className="mt-3">
+            <SubmitButton
+              pendingText="Sending…"
+              className="min-h-11 rounded-xl border border-stone-300 bg-card px-5 py-2.5 text-sm font-medium text-stone-800 hover:-translate-y-0.5 hover:bg-stone-50 active:scale-[0.99] dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700"
+            >
+              🤍 Send a tap
+            </SubmitButton>
+          </form>
+        </div>
+      )}
+
       <Card title="Next visit" subtitle="Optional — add this in Settings when plans become clearer.">
         {couple.next_visit_date ? (() => {
           const d = new Date(couple.next_visit_date + "T00:00:00");
@@ -155,17 +196,11 @@ export default async function AppHomePage() {
       </Card>
 
       <Card title="Today’s Daily Moment" subtitle="Three gentle prompts to reconnect.">
-        <StatusBadge state={dailyState} />
-        <Link href="/app/daily" className="mt-3 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-card px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
-          Open Daily Moment
-        </Link>
+        <SessionLink href="/app/daily" state={dailyState} notStartedLabel="Start today →" unlockedLabel="Read responses ✨" />
       </Card>
 
       <Card title="Weekly Reset" subtitle="A longer check-in for bigger feelings and plans.">
-        <StatusBadge state={weeklyState} />
-        <Link href="/app/weekly" className="mt-3 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-card px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
-          Open Weekly Reset
-        </Link>
+        <SessionLink href="/app/weekly" state={weeklyState} notStartedLabel="Start this week’s reset →" unlockedLabel="Read responses ✨" />
       </Card>
 
       <Card title="Reassurance" subtitle="Ask softly, answer warmly, and lower the temperature together.">
@@ -243,24 +278,45 @@ function Card({ title, subtitle, children }: { title: string; subtitle?: string;
   );
 }
 
-function StatusBadge({ state }: { state: SessionState }) {
-  const style =
-    state === "waiting"
-      ? "border-amber-200 bg-amber-50 text-amber-800"
-      : "border-stone-300 bg-stone-100 text-stone-700 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200";
-
-  if (state === "unlocked") {
+function SessionLink({
+  href,
+  state,
+  notStartedLabel,
+  unlockedLabel,
+}: {
+  href: string;
+  state: SessionState;
+  notStartedLabel: string;
+  unlockedLabel: string;
+}) {
+  if (state === "waiting") {
     return (
-      <p className="btn-accent inline-flex rounded-full border border-transparent px-2.5 py-1 text-xs font-semibold">
-        you’re both here
-      </p>
+      <Link
+        href={href}
+        className="inline-flex min-h-11 items-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-800 transition hover:-translate-y-0.5 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200 dark:hover:bg-amber-900"
+      >
+        Waiting for your person…
+      </Link>
     );
   }
 
-  const label =
-    state === "waiting"
-      ? "waiting for your person"
-      : "your note is ready";
+  if (state === "unlocked") {
+    return (
+      <Link
+        href={href}
+        className="btn-accent inline-flex min-h-11 items-center rounded-xl px-4 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5"
+      >
+        {unlockedLabel}
+      </Link>
+    );
+  }
 
-  return <p className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${style}`}>{label}</p>;
+  return (
+    <Link
+      href={href}
+      className="btn-accent inline-flex min-h-11 items-center rounded-xl px-4 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5"
+    >
+      {notStartedLabel}
+    </Link>
+  );
 }
