@@ -624,6 +624,134 @@ export async function uploadAvatarAction(formData: FormData) {
   revalidatePath("/app/settings");
 }
 
+export async function sendThinkingOfYouAction() {
+  const supabase = await createClient();
+  const user = await getMe();
+  const couple = await getMyCouple();
+  if (!user || !couple?.member2) return;
+
+  const toUserId = getPartnerId(couple, user.id)!;
+  const { data: myProfile } = await supabase.from("profiles").select("first_name").eq("id", user.id).single();
+  const fromName = myProfile?.first_name || "Your partner";
+
+  await supabase.from("notifications").insert({
+    couple_id: couple.id,
+    to_user_id: toUserId,
+    from_user_id: user.id,
+    type: "thinking_of_you",
+    payload: { from_name: fromName },
+  });
+
+  await trackEvent("thinking_of_you_sent");
+  revalidatePath("/app");
+}
+
+export async function reactToNoteAction(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getMe();
+  if (!user) return;
+
+  const noteId = String(formData.get("note_id") || "");
+  const reaction = String(formData.get("reaction") || "");
+  if (!noteId || !["💛", "🥹", "😂"].includes(reaction)) return;
+
+  await supabase
+    .from("love_notes")
+    .update({ reaction })
+    .eq("id", noteId)
+    .eq("to_user_id", user.id);
+
+  // Notify the sender
+  const { data: note } = await supabase
+    .from("love_notes")
+    .select("from_user_id, couple_id")
+    .eq("id", noteId)
+    .single();
+
+  if (note) {
+    const { data: myProfile } = await supabase.from("profiles").select("first_name").eq("id", user.id).single();
+    await supabase.from("notifications").insert({
+      couple_id: note.couple_id,
+      to_user_id: note.from_user_id,
+      from_user_id: user.id,
+      type: "note_reaction",
+      payload: { reaction, from_name: myProfile?.first_name || "Your partner" },
+    });
+  }
+
+  revalidatePath("/app/love-notes");
+}
+
+export async function addBucketItemAction(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getMe();
+  const couple = await getMyCouple();
+  if (!user || !couple) return;
+
+  const content = String(formData.get("content") || "").trim();
+  if (!content || content.length > 500) return;
+
+  await supabase.from("bucket_list_items").insert({
+    couple_id: couple.id,
+    created_by: user.id,
+    content,
+  });
+
+  await trackEvent("bucket_item_added");
+  revalidatePath("/app/bucket-list");
+}
+
+export async function toggleBucketItemAction(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getMe();
+  const couple = await getMyCouple();
+  if (!user || !couple) return;
+
+  const itemId = String(formData.get("item_id") || "");
+  const completed = formData.get("completed") === "true";
+  if (!itemId) return;
+
+  await supabase
+    .from("bucket_list_items")
+    .update({ completed_at: completed ? null : new Date().toISOString() })
+    .eq("id", itemId)
+    .eq("couple_id", couple.id);
+
+  revalidatePath("/app/bucket-list");
+}
+
+export async function deleteBucketItemAction(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getMe();
+  if (!user) return;
+
+  const itemId = String(formData.get("item_id") || "");
+  if (!itemId) return;
+
+  await supabase
+    .from("bucket_list_items")
+    .delete()
+    .eq("id", itemId)
+    .eq("created_by", user.id);
+
+  revalidatePath("/app/bucket-list");
+}
+
+export async function saveNotificationPrefsAction(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getMe();
+  if (!user) return;
+
+  const prefs = {
+    email_love_note: formData.get("email_love_note") === "on",
+    email_reassurance: formData.get("email_reassurance") === "on",
+    email_session_unlocked: formData.get("email_session_unlocked") === "on",
+  };
+
+  await supabase.from("profiles").update({ notification_prefs: prefs }).eq("id", user.id);
+  revalidatePath("/app/settings");
+}
+
 export async function deleteAccountAction() {
   const supabase = await createClient();
   const user = await getMe();

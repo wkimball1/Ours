@@ -1,8 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { getMyData } from "@/lib/ours";
-import { sendLoveNoteAction, markNoteReadAction } from "@/app/actions";
+import { sendLoveNoteAction, markNoteReadAction, reactToNoteAction } from "@/app/actions";
 import { LocalTime } from "@/components/local-time";
 import { SubmitButton } from "@/components/submit-button";
+
+const REACTIONS = ["💛", "🥹", "😂"] as const;
 
 export default async function LoveNotesPage() {
   const supabase = await createClient();
@@ -63,16 +65,36 @@ export default async function LoveNotesPage() {
           {unreadNotes.map((note) => (
             <div key={note.id} className="rounded-2xl border-2 border-rose-200 bg-rose-50 p-5 shadow-sm dark:border-rose-800 dark:bg-rose-950">
               <p className="text-stone-900 dark:text-stone-100">&ldquo;{note.message}&rdquo;</p>
-              <div className="mt-3 flex items-center justify-between">
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                 <p className="text-xs text-stone-500 dark:text-stone-400">
                   <LocalTime dateStr={note.created_at} />
                 </p>
-                <form action={markNoteReadAction}>
-                  <input type="hidden" name="note_id" value={note.id} />
-                  <button className="text-xs font-medium text-rose-700 underline underline-offset-2 transition hover:text-rose-900 dark:text-rose-300 dark:hover:text-rose-100">
-                    Mark as read
-                  </button>
-                </form>
+                <div className="flex items-center gap-2">
+                  {/* Emoji reactions */}
+                  <div className="flex gap-1">
+                    {REACTIONS.map((emoji) => (
+                      <form key={emoji} action={reactToNoteAction}>
+                        <input type="hidden" name="note_id" value={note.id} />
+                        <input type="hidden" name="reaction" value={emoji} />
+                        <button
+                          className={`rounded-lg border px-2 py-1 text-sm transition hover:-translate-y-0.5 active:scale-95 ${
+                            note.reaction === emoji
+                              ? "border-rose-400 bg-rose-200 dark:border-rose-600 dark:bg-rose-900"
+                              : "border-stone-200 bg-white hover:border-rose-300 dark:border-stone-700 dark:bg-stone-800"
+                          }`}
+                        >
+                          {emoji}
+                        </button>
+                      </form>
+                    ))}
+                  </div>
+                  <form action={markNoteReadAction}>
+                    <input type="hidden" name="note_id" value={note.id} />
+                    <button className="text-xs font-medium text-rose-700 underline underline-offset-2 transition hover:text-rose-900 dark:text-rose-300 dark:hover:text-rose-100">
+                      Mark as read
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
           ))}
@@ -85,9 +107,14 @@ export default async function LoveNotesPage() {
           {(receivedNotes ?? []).filter((n) => n.read_at).map((note) => (
             <div key={note.id} className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
               <p className="text-stone-700 dark:text-stone-200">&ldquo;{note.message}&rdquo;</p>
-              <p className="mt-2 text-xs text-stone-400">
-                <LocalTime dateStr={note.created_at} />
-              </p>
+              <div className="mt-2 flex items-center justify-between">
+                <p className="text-xs text-stone-400">
+                  <LocalTime dateStr={note.created_at} />
+                </p>
+                {note.reaction && (
+                  <span className="text-lg leading-none" title="Your reaction">{note.reaction}</span>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -99,10 +126,15 @@ export default async function LoveNotesPage() {
           {(sentNotes ?? []).map((note) => (
             <div key={note.id} className="rounded-2xl border border-[var(--border)] bg-stone-50 p-5 dark:bg-stone-800">
               <p className="text-sm text-stone-600 dark:text-stone-300">&ldquo;{note.message}&rdquo;</p>
-              <p className="mt-2 text-xs text-stone-400">
-                <LocalTime dateStr={note.created_at} />
-                {note.read_at ? " · Read" : " · Not yet read"}
-              </p>
+              <div className="mt-2 flex items-center justify-between">
+                <p className="text-xs text-stone-400">
+                  <LocalTime dateStr={note.created_at} />
+                  {note.read_at ? " · Read" : " · Not yet read"}
+                </p>
+                {note.reaction && (
+                  <span className="text-lg leading-none" title="Their reaction">{note.reaction}</span>
+                )}
+              </div>
             </div>
           ))}
         </div>

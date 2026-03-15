@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { createCoupleAction, generateInviteAction } from "@/app/actions";
+import { createCoupleAction, generateInviteAction, sendThinkingOfYouAction } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
 import { ensureDailySession, ensureWeeklySession, getMyData, getPartnerId } from "@/lib/ours";
 import { InviteShare } from "@/components/invite-share";
 import { OnboardingModal } from "@/components/onboarding-modal";
+import { SubmitButton } from "@/components/submit-button";
 
 function timeAgo(dateStr: string): string {
   const now = Date.now();
@@ -62,11 +63,14 @@ export default async function AppHomePage() {
     partnerPresence = partnerProfile;
   }
 
-  const { count: unlockedCount } = await supabase
-    .from("sessions")
-    .select("*", { count: "exact", head: true })
-    .eq("couple_id", couple.id)
-    .eq("status", "unlocked");
+  const [{ count: unlockedCount }, { data: myProfile }] = await Promise.all([
+    supabase
+      .from("sessions")
+      .select("*", { count: "exact", head: true })
+      .eq("couple_id", couple.id)
+      .eq("status", "unlocked"),
+    supabase.from("profiles").select("first_name, avatar_url, timezone").eq("id", user.id).single(),
+  ]);
 
   const [dailyState, weeklyState] = await Promise.all([
     getSessionState(supabase, daily.id, user.id, partnerId, 3),
@@ -126,6 +130,43 @@ export default async function AppHomePage() {
           </form>
 
           <InviteShare inviteLink={inviteLink} />
+        </div>
+      )}
+
+      {/* Profile completion nudge */}
+      {(() => {
+        const missing: string[] = [];
+        if (!myProfile?.first_name) missing.push("your first name");
+        if (!couple.relationship_start_date) missing.push("your relationship start date");
+        if (!couple.next_visit_date) missing.push("your next visit date");
+        if (!myProfile?.avatar_url) missing.push("a profile photo");
+        if (missing.length >= 2) {
+          return (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm dark:border-amber-800 dark:bg-amber-950 md:col-span-2">
+              <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">Make this space more yours</p>
+              <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">Add {missing.slice(0, 2).join(" and ")} to get more out of Ours.</p>
+              <Link href="/app/settings" className="mt-3 inline-flex min-h-9 items-center rounded-lg border border-amber-300 bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-200 dark:border-amber-700 dark:bg-amber-900 dark:text-amber-200">
+                Go to Settings →
+              </Link>
+            </div>
+          );
+        }
+        return null;
+      })()}
+
+      {/* Thinking of you tap */}
+      {!!couple.member2 && (
+        <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
+          <p className="text-base font-semibold text-stone-900 dark:text-stone-100">Thinking of you</p>
+          <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">Send {partnerPresence?.first_name || "your partner"} a quiet tap — no words needed.</p>
+          <form action={sendThinkingOfYouAction} className="mt-3">
+            <SubmitButton
+              pendingText="Sending…"
+              className="min-h-11 rounded-xl border border-stone-300 bg-card px-5 py-2.5 text-sm font-medium text-stone-800 hover:-translate-y-0.5 hover:bg-stone-50 active:scale-[0.99] dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700"
+            >
+              🤍 Send a tap
+            </SubmitButton>
+          </form>
         </div>
       )}
 

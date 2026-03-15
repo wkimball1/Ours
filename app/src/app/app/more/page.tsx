@@ -3,6 +3,7 @@ import { logoutAction } from "@/app/actions";
 
 const featureLinks = [
   { href: "/app/love-notes", label: "Love Notes", emoji: "💌", description: "Leave a surprise note for your partner." },
+  { href: "/app/bucket-list", label: "Bucket List", emoji: "✨", description: "Things you want to do and experience together." },
   { href: "/app/journal", label: "Journal", emoji: "📓", description: "A shared space for thoughts and memories." },
   { href: "/app/memories", label: "Memories", emoji: "🎞️", description: "Everything you've shared, all in one place." },
   { href: "/app/milestones", label: "Milestones", emoji: "🏅", description: "Celebrate how far you've come together." },

@@ -14,11 +14,14 @@ export const themes = [
 ] as const;
 
 export type ThemeId = (typeof themes)[number]["id"];
+export type DarkMode = "system" | "light" | "dark";
 
 const ThemeContext = createContext<{
   theme: ThemeId;
   setTheme: (t: ThemeId) => void;
-}>({ theme: "stone", setTheme: () => {} });
+  darkMode: DarkMode;
+  setDarkMode: (m: DarkMode) => void;
+}>({ theme: "stone", setTheme: () => {}, darkMode: "system", setDarkMode: () => {} });
 
 export function useTheme() {
   return useContext(ThemeContext);
@@ -26,12 +29,17 @@ export function useTheme() {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<ThemeId>("stone");
+  const [darkMode, setDarkModeState] = useState<DarkMode>("system");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("ours-theme") as ThemeId | null;
-    if (saved && themes.some((t) => t.id === saved)) {
-      setThemeState(saved);
+    const savedTheme = localStorage.getItem("ours-theme") as ThemeId | null;
+    if (savedTheme && themes.some((t) => t.id === savedTheme)) {
+      setThemeState(savedTheme);
+    }
+    const savedDark = localStorage.getItem("ours-darkmode") as DarkMode | null;
+    if (savedDark && ["system", "light", "dark"].includes(savedDark)) {
+      setDarkModeState(savedDark);
     }
     setMounted(true);
   }, []);
@@ -42,12 +50,38 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("ours-theme", theme);
   }, [theme, mounted]);
 
+  useEffect(() => {
+    if (!mounted) return;
+
+    const applyDark = (prefsDark: boolean) => {
+      if (darkMode === "dark" || (darkMode === "system" && prefsDark)) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    };
+
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    applyDark(mq.matches);
+    localStorage.setItem("ours-darkmode", darkMode);
+
+    const handler = (e: MediaQueryListEvent) => {
+      if (darkMode === "system") applyDark(e.matches);
+    };
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, [darkMode, mounted]);
+
   function setTheme(t: ThemeId) {
     setThemeState(t);
   }
 
+  function setDarkMode(m: DarkMode) {
+    setDarkModeState(m);
+  }
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, darkMode, setDarkMode }}>
       {children}
     </ThemeContext.Provider>
   );

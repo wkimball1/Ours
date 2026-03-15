@@ -37,6 +37,16 @@ function notifMeta(type: string, payload: Record<string, string> | null): { labe
         label: `💬 ${p.message ? p.message.slice(0, 60) + (p.message.length > 60 ? "…" : "") : "A message from your partner"}`,
         href: "/app/reassurance",
       };
+    case "thinking_of_you":
+      return {
+        label: `🤍 ${p.from_name ?? "Your partner"} is thinking of you`,
+        href: "/app",
+      };
+    case "note_reaction":
+      return {
+        label: `${p.reaction ?? "💛"} ${p.from_name ?? "Your partner"} reacted to your note`,
+        href: "/app/love-notes",
+      };
     default:
       return { label: "New notification", href: "/app" };
   }
