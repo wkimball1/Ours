@@ -95,9 +95,12 @@ export default async function ReassurancePage() {
               {templates.map((t) => (
                 <form key={t} action={sendReassuranceMessageAction}>
                   <input type="hidden" name="message" value={t} />
-                  <button className="min-h-11 w-full rounded-xl border border-[var(--border)] bg-stone-50 p-3 text-left text-sm text-stone-700 transition hover:border-stone-300 hover:bg-stone-100 active:scale-[0.99] dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700">
+                  <SubmitButton
+                    pendingText="Sending…"
+                    className="min-h-11 w-full rounded-xl border border-[var(--border)] bg-stone-50 p-3 text-left text-sm text-stone-700 hover:border-stone-300 hover:bg-stone-100 active:scale-[0.99] dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
+                  >
                     {t}
-                  </button>
+                  </SubmitButton>
                 </form>
               ))}
             </div>
