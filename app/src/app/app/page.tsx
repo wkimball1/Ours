@@ -155,17 +155,11 @@ export default async function AppHomePage() {
       </Card>
 
       <Card title="Today’s Daily Moment" subtitle="Three gentle prompts to reconnect.">
-        <StatusBadge state={dailyState} />
-        <Link href="/app/daily" className="mt-3 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-card px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
-          Open Daily Moment
-        </Link>
+        <SessionLink href="/app/daily" state={dailyState} notStartedLabel="Start today →" unlockedLabel="Read responses ✨" />
       </Card>
 
       <Card title="Weekly Reset" subtitle="A longer check-in for bigger feelings and plans.">
-        <StatusBadge state={weeklyState} />
-        <Link href="/app/weekly" className="mt-3 inline-flex min-h-11 items-center rounded-xl border border-stone-300 bg-card px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">
-          Open Weekly Reset
-        </Link>
+        <SessionLink href="/app/weekly" state={weeklyState} notStartedLabel="Start this week’s reset →" unlockedLabel="Read responses ✨" />
       </Card>
 
       <Card title="Reassurance" subtitle="Ask softly, answer warmly, and lower the temperature together.">
@@ -243,24 +237,45 @@ function Card({ title, subtitle, children }: { title: string; subtitle?: string;
   );
 }
 
-function StatusBadge({ state }: { state: SessionState }) {
-  const style =
-    state === "waiting"
-      ? "border-amber-200 bg-amber-50 text-amber-800"
-      : "border-stone-300 bg-stone-100 text-stone-700 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200";
-
-  if (state === "unlocked") {
+function SessionLink({
+  href,
+  state,
+  notStartedLabel,
+  unlockedLabel,
+}: {
+  href: string;
+  state: SessionState;
+  notStartedLabel: string;
+  unlockedLabel: string;
+}) {
+  if (state === "waiting") {
     return (
-      <p className="btn-accent inline-flex rounded-full border border-transparent px-2.5 py-1 text-xs font-semibold">
-        you’re both here
-      </p>
+      <Link
+        href={href}
+        className="inline-flex min-h-11 items-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-800 transition hover:-translate-y-0.5 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200 dark:hover:bg-amber-900"
+      >
+        Waiting for your person…
+      </Link>
     );
   }
 
-  const label =
-    state === "waiting"
-      ? "waiting for your person"
-      : "your note is ready";
+  if (state === "unlocked") {
+    return (
+      <Link
+        href={href}
+        className="btn-accent inline-flex min-h-11 items-center rounded-xl px-4 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5"
+      >
+        {unlockedLabel}
+      </Link>
+    );
+  }
 
-  return <p className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${style}`}>{label}</p>;
+  return (
+    <Link
+      href={href}
+      className="btn-accent inline-flex min-h-11 items-center rounded-xl px-4 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5"
+    >
+      {notStartedLabel}
+    </Link>
+  );
 }
