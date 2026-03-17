@@ -59,12 +59,16 @@ export default async function WeeklyPage() {
       <SessionForm sessionId={session.id} prompts={prompts ?? []} existing={existing} />
 
       {session.status === "unlocked" && (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2" style={{ animation: "fadeIn 0.4s ease both" }}>
           <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
             <p className="font-semibold text-stone-900 dark:text-stone-100">Your weekly reset</p>
             <div className="mt-3 space-y-4 text-sm text-stone-700 dark:text-stone-200">
               {(mine ?? []).map((r) => (
-                <div key={r.step_index} className="space-y-1">
+                <div
+                  key={r.step_index}
+                  className="unlock-card space-y-1"
+                  style={{ animationDelay: `${r.step_index * 100}ms` }}
+                >
                   {promptMap[r.step_index] && <p className="text-xs text-stone-400 dark:text-stone-500">{promptMap[r.step_index]}</p>}
                   <p>{r.response_text}</p>
                 </div>
@@ -75,7 +79,11 @@ export default async function WeeklyPage() {
             <p className="font-semibold text-stone-900 dark:text-stone-100">Partner weekly reset</p>
             <div className="mt-3 space-y-4 text-sm text-stone-700 dark:text-stone-200">
               {(partnerRows ?? []).map((r) => (
-                <div key={r.step_index} className="space-y-1">
+                <div
+                  key={r.step_index}
+                  className="unlock-card space-y-1"
+                  style={{ animationDelay: `${(r.step_index + totalPrompts) * 100}ms` }}
+                >
                   {promptMap[r.step_index] && <p className="text-xs text-stone-400 dark:text-stone-500">{promptMap[r.step_index]}</p>}
                   <p>{r.response_text}</p>
                 </div>

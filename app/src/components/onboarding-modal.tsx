@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 const STORAGE_KEY = "ours_onboarded_v1";
+const STORAGE_KEY_P2 = "ours_p2_onboarded_v1";
 
-const slides = [
+const partner1Slides = [
   {
     emoji: "💬",
     title: "A tiny ritual, every day",
@@ -23,23 +24,49 @@ const slides = [
   },
 ];
 
-export function OnboardingModal({ hasPartner }: { hasPartner: boolean }) {
+function getPartner2Slides(partnerName: string | null) {
+  return [
+    {
+      emoji: "🤍",
+      title: partnerName ? `You've joined ${partnerName}'s space` : "You've joined your partner's space",
+      body: "You're now connected. Each day you'll both get a few short prompts — you answer independently, and once you've both shown up, you unlock each other's responses.",
+    },
+    {
+      emoji: "🔓",
+      title: "Your first moment is ready",
+      body: "Today's daily prompts are waiting for both of you. Answer honestly, in your own time — there's no right answer, just yours.",
+    },
+  ];
+}
+
+export function OnboardingModal({
+  hasPartner,
+  isPartner2 = false,
+  partner1Name = null,
+}: {
+  hasPartner: boolean;
+  isPartner2?: boolean;
+  partner1Name?: string | null;
+}) {
   const [visible, setVisible] = useState(false);
   const [step, setStep] = useState(0);
 
+  const slides = isPartner2 ? getPartner2Slides(partner1Name) : partner1Slides;
+  const storageKey = isPartner2 ? STORAGE_KEY_P2 : STORAGE_KEY;
+
   useEffect(() => {
     try {
-      if (!localStorage.getItem(STORAGE_KEY)) {
+      if (!localStorage.getItem(storageKey)) {
         setVisible(true);
       }
     } catch {
       // localStorage unavailable
     }
-  }, []);
+  }, [storageKey]);
 
   function dismiss() {
     try {
-      localStorage.setItem(STORAGE_KEY, "1");
+      localStorage.setItem(storageKey, "1");
     } catch {
       // ignore
     }
@@ -79,7 +106,15 @@ export function OnboardingModal({ hasPartner }: { hasPartner: boolean }) {
         <div className="mt-6 space-y-2">
           {isLast ? (
             <>
-              {!hasPartner && (
+              {isPartner2 ? (
+                <Link
+                  href="/app/daily"
+                  onClick={dismiss}
+                  className="btn-accent flex min-h-11 w-full items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5"
+                >
+                  Start today's moment →
+                </Link>
+              ) : !hasPartner ? (
                 <Link
                   href="/app"
                   onClick={dismiss}
@@ -87,12 +122,12 @@ export function OnboardingModal({ hasPartner }: { hasPartner: boolean }) {
                 >
                   Invite your partner
                 </Link>
-              )}
+              ) : null}
               <button
                 onClick={dismiss}
                 className="min-h-11 w-full rounded-xl border border-stone-300 bg-card px-4 py-2.5 text-sm font-medium text-stone-800 transition hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700"
               >
-                {hasPartner ? "Let's go" : "I'll invite them later"}
+                {isPartner2 ? "Explore first" : hasPartner ? "Let's go" : "I'll invite them later"}
               </button>
             </>
           ) : (
