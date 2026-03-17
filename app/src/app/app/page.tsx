@@ -39,8 +39,8 @@ export default async function AppHomePage() {
   }
 
   const [daily, weekly] = await Promise.all([
-    ensureDailySession(couple.id),
-    ensureWeeklySession(couple.id),
+    ensureDailySession(couple.id, couple.created_at.slice(0, 10)),
+    ensureWeeklySession(couple.id, couple.created_at.slice(0, 10)),
   ]);
 
   if (!daily || !weekly) {
