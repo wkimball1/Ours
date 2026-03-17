@@ -10,7 +10,7 @@ export default async function DailyPage() {
 
   if (!user || !couple) return <p>Set up your couple first.</p>;
 
-  const session = await ensureDailySession(couple.id, couple.joined_date ?? couple.created_at.slice(0, 10));
+  const session = await ensureDailySession(couple.id, couple.created_at.slice(0, 10));
   if (!session) return <p className="text-sm text-stone-600 dark:text-stone-400">Today&apos;s daily prompts are being prepared. Check back in a little while!</p>;
 
   const partnerId = getPartnerId(couple, user.id);
