@@ -1,6 +1,7 @@
 import { acceptInviteAction } from "@/app/actions";
 import Link from "next/link";
 import { getMe } from "@/lib/ours";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export default async function InvitePage({
   params,
@@ -23,6 +24,17 @@ export default async function InvitePage({
   const error = sp.error ? decodeURIComponent(sp.error) : null;
   const source = sp.source || "invite_link";
 
+  // Look up the inviter's name using the admin client (bypasses RLS for unauthenticated visitors)
+  let inviterName: string | null = null;
+  const admin = createAdminClient();
+  if (admin) {
+    const { data: invite } = await admin.from("invites").select("created_by").eq("token", token).is("used_at", null).maybeSingle();
+    if (invite?.created_by) {
+      const { data: profile } = await admin.from("profiles").select("first_name").eq("id", invite.created_by).single();
+      inviterName = profile?.first_name || null;
+    }
+  }
+
   const query = new URLSearchParams({
     source,
     invite: token,
@@ -35,7 +47,7 @@ export default async function InvitePage({
 
   return (
     <main className="mx-auto max-w-md px-6 py-16">
-      <h1 className="text-3xl font-semibold">You’ve been invited to Ours</h1>
+      <h1 className="text-3xl font-semibold">{inviterName ? `${inviterName} invited you to Ours` : "You’ve been invited to Ours"}</h1>
       <p className="mt-2 text-sm text-stone-600">When you’re ready, accept and connect.</p>
 
       {error && <p className="mt-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}

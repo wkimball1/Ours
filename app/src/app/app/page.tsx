@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { createCoupleAction, generateInviteAction, sendThinkingOfYouAction } from "@/app/actions";
+import { createCoupleAction, generateInviteAction, sendNudgeAction } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
 import { ensureDailySession, ensureWeeklySession, getMyData, getPartnerId } from "@/lib/ours";
 import { InviteShare } from "@/components/invite-share";
 import { OnboardingModal } from "@/components/onboarding-modal";
 import { SubmitButton } from "@/components/submit-button";
+import { ThinkingOfYouButton } from "@/components/thinking-of-you-button";
 
 function timeAgo(dateStr: string): string {
   const now = Date.now();
@@ -53,11 +54,11 @@ export default async function AppHomePage() {
 
   const partnerId = getPartnerId(couple, user.id);
 
-  let partnerPresence: { first_name: string; last_active_at: string | null; avatar_url: string | null } | null = null;
+  let partnerPresence: { first_name: string; last_active_at: string | null; avatar_url: string | null; timezone: string | null } | null = null;
   if (partnerId) {
     const { data: partnerProfile } = await supabase
       .from("profiles")
-      .select("first_name, last_active_at, avatar_url")
+      .select("first_name, last_active_at, avatar_url, timezone")
       .eq("id", partnerId)
       .single();
     partnerPresence = partnerProfile;
@@ -92,7 +93,11 @@ export default async function AppHomePage() {
 
   return (
     <>
-    <OnboardingModal hasPartner={!!couple.member2} />
+    <OnboardingModal
+        hasPartner={!!couple.member2}
+        isPartner2={couple.member2 === user.id}
+        partner1Name={couple.member2 === user.id ? (partnerPresence?.first_name ?? null) : null}
+      />
     <section className="grid gap-4 sm:gap-5 md:grid-cols-2">
       <div className="hero-card rounded-3xl border border-white/10 p-6 text-white md:col-span-2 sm:p-7">
         <div className="flex items-center justify-between">
@@ -105,9 +110,16 @@ export default async function AppHomePage() {
               ) : (
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-card/20 text-sm">🤍</div>
               )}
-              <p className={`text-xs font-medium ${timeAgo(partnerPresence.last_active_at) === "Active now" ? "text-emerald-300" : "text-stone-400"}`}>
-                {partnerPresence.first_name ? `${partnerPresence.first_name}: ` : ""}{timeAgo(partnerPresence.last_active_at)}
-              </p>
+              <div>
+                <p className={`text-xs font-medium ${timeAgo(partnerPresence.last_active_at) === "Active now" ? "text-emerald-300" : "text-stone-400"}`}>
+                  {partnerPresence.first_name ? `${partnerPresence.first_name}: ` : ""}{timeAgo(partnerPresence.last_active_at)}
+                </p>
+                {partnerPresence.timezone && (
+                  <p className="text-xs text-white/40">
+                    {new Date().toLocaleTimeString("en-US", { timeZone: partnerPresence.timezone, hour: "numeric", minute: "2-digit", hour12: true })} their time
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -126,7 +138,7 @@ export default async function AppHomePage() {
               await generateInviteAction();
             }}
           >
-            <button className="min-h-11 rounded-xl border border-stone-300 bg-card px-3 py-2 text-sm font-medium text-stone-800 transition hover:-translate-y-0.5 hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700">Generate or refresh invite link</button>
+            <button className="btn-accent min-h-11 rounded-xl px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5">Invite your person</button>
           </form>
 
           <InviteShare inviteLink={inviteLink} />
@@ -140,7 +152,7 @@ export default async function AppHomePage() {
         if (!couple.relationship_start_date) missing.push("your relationship start date");
         if (!couple.next_visit_date) missing.push("your next visit date");
         if (!myProfile?.avatar_url) missing.push("a profile photo");
-        if (missing.length >= 2) {
+        if (missing.length >= 1) {
           return (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm dark:border-amber-800 dark:bg-amber-950 md:col-span-2">
               <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">Make this space more yours</p>
@@ -159,14 +171,9 @@ export default async function AppHomePage() {
         <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
           <p className="text-base font-semibold text-stone-900 dark:text-stone-100">Thinking of you</p>
           <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">Send {partnerPresence?.first_name || "your partner"} a quiet tap — no words needed.</p>
-          <form action={sendThinkingOfYouAction} className="mt-3">
-            <SubmitButton
-              pendingText="Sending…"
-              className="min-h-11 rounded-xl border border-stone-300 bg-card px-5 py-2.5 text-sm font-medium text-stone-800 hover:-translate-y-0.5 hover:bg-stone-50 active:scale-[0.99] dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700"
-            >
-              🤍 Send a tap
-            </SubmitButton>
-          </form>
+          <div className="mt-3">
+            <ThinkingOfYouButton partnerName={partnerPresence?.first_name} />
+          </div>
         </div>
       )}
 
@@ -291,12 +298,22 @@ function SessionLink({
 }) {
   if (state === "waiting") {
     return (
-      <Link
-        href={href}
-        className="inline-flex min-h-11 items-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-800 transition hover:-translate-y-0.5 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200 dark:hover:bg-amber-900"
-      >
-        Waiting for your person…
-      </Link>
+      <div className="space-y-2">
+        <Link
+          href={href}
+          className="inline-flex min-h-11 items-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-800 transition hover:-translate-y-0.5 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200 dark:hover:bg-amber-900"
+        >
+          Waiting for your person…
+        </Link>
+        <form action={sendNudgeAction}>
+          <SubmitButton
+            pendingText="Nudged!"
+            className="block text-xs text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300"
+          >
+            Nudge them →
+          </SubmitButton>
+        </form>
+      </div>
     );
   }
 
