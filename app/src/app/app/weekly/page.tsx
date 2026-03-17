@@ -89,7 +89,7 @@ export default async function WeeklyPage() {
         </p>
       )}
 
-      <SessionForm sessionId={session.id} prompts={prompts ?? []} existing={existing} />
+      <SessionForm sessionId={session.id} prompts={prompts ?? []} existing={existing} theme={contentSet?.theme ?? undefined} />
 
       {session.status === "unlocked" && (
         <div className="grid gap-4 md:grid-cols-2" style={{ animation: "fadeIn 0.4s ease both" }}>

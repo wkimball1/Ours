@@ -9,17 +9,19 @@ export function SessionForm({
   sessionId,
   prompts,
   existing,
+  theme,
 }: {
   sessionId: string;
   prompts: Prompt[];
   existing: Record<number, string>;
+  theme?: string;
 }) {
   const firstUnanswered = prompts.findIndex((p) => !(existing[p.step_index] ?? "").trim());
 
   // All prompts already answered — let the page's waiting/unlock section take over
   if (prompts.length > 0 && firstUnanswered === -1) return null;
 
-  return <SteppedForm sessionId={sessionId} prompts={prompts} existing={existing} initialStep={Math.max(0, firstUnanswered)} />;
+  return <SteppedForm sessionId={sessionId} prompts={prompts} existing={existing} initialStep={Math.max(0, firstUnanswered)} theme={theme} />;
 }
 
 function SteppedForm({
@@ -27,11 +29,13 @@ function SteppedForm({
   prompts,
   existing,
   initialStep,
+  theme,
 }: {
   sessionId: string;
   prompts: Prompt[];
   existing: Record<number, string>;
   initialStep: number;
+  theme?: string;
 }) {
   const [step, setStep] = useState(initialStep);
   const [responses, setResponses] = useState<Record<number, string>>({ ...existing });
@@ -95,7 +99,10 @@ function SteppedForm({
           />
         ))}
       </div>
-      <p className="text-xs font-medium text-stone-400 dark:text-stone-500">{step + 1} of {prompts.length}</p>
+      <p className="text-xs font-medium text-stone-400 dark:text-stone-500">
+        {step + 1} of {prompts.length}
+        {theme && <span className="ml-2 italic">&ldquo;{theme}&rdquo;</span>}
+      </p>
 
       {/* Prompt text */}
       <p className="text-base leading-relaxed text-stone-900 dark:text-stone-100">{prompt.prompt_text}</p>

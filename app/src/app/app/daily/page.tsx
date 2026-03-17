@@ -90,7 +90,7 @@ export default async function DailyPage() {
         </p>
       )}
 
-      <SessionForm sessionId={session.id} prompts={prompts ?? []} existing={existing} />
+      <SessionForm sessionId={session.id} prompts={prompts ?? []} existing={existing} theme={contentSet?.theme ?? undefined} />
 
       {session.status !== "unlocked" && mineCount >= totalPrompts && totalPrompts > 0 ? (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950">

@@ -54,6 +54,11 @@ export default async function AppHomePage() {
 
   const partnerId = getPartnerId(couple, user.id);
 
+  const [{ data: dailySet }, { data: weeklySet }] = await Promise.all([
+    supabase.from("content_sets").select("theme").eq("id", daily.content_set_id).single(),
+    supabase.from("content_sets").select("theme").eq("id", weekly.content_set_id).single(),
+  ]);
+
   let partnerPresence: { first_name: string; last_active_at: string | null; avatar_url: string | null; timezone: string | null } | null = null;
   if (partnerId) {
     const { data: partnerProfile } = await supabase
@@ -202,12 +207,12 @@ export default async function AppHomePage() {
         <p className="text-sm text-stone-600 dark:text-stone-300">shared moments completed</p>
       </Card>
 
-      <Card title="Today’s Daily Moment" subtitle="Three gentle prompts to reconnect.">
-        <SessionLink href="/app/daily" state={dailyState} notStartedLabel="Start today →" unlockedLabel="Read responses ✨" />
+      <Card title="Today’s Daily Moment" subtitle={dailySet?.theme ? `"${dailySet.theme}"` : "Three gentle prompts to reconnect."}>
+        <SessionLink href="/app/daily" state={dailyState} notStartedLabel="Start today →" unlockedLabel="Read responses ✨" partnerName={partnerPresence?.first_name} />
       </Card>
 
-      <Card title="Weekly Reset" subtitle="A longer check-in for bigger feelings and plans.">
-        <SessionLink href="/app/weekly" state={weeklyState} notStartedLabel="Start this week’s reset →" unlockedLabel="Read responses ✨" />
+      <Card title="Weekly Reset" subtitle={weeklySet?.theme ? `"${weeklySet.theme}"` : "A longer check-in for bigger feelings and plans."}>
+        <SessionLink href="/app/weekly" state={weeklyState} notStartedLabel="Start this week’s reset →" unlockedLabel="Read responses ✨" partnerName={partnerPresence?.first_name} />
       </Card>
 
       <Card title="Reassurance" subtitle="Ask softly, answer warmly, and lower the temperature together.">
@@ -290,11 +295,13 @@ function SessionLink({
   state,
   notStartedLabel,
   unlockedLabel,
+  partnerName,
 }: {
   href: string;
   state: SessionState;
   notStartedLabel: string;
   unlockedLabel: string;
+  partnerName?: string | null;
 }) {
   if (state === "waiting") {
     return (
@@ -303,7 +310,7 @@ function SessionLink({
           href={href}
           className="inline-flex min-h-11 items-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-800 transition hover:-translate-y-0.5 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200 dark:hover:bg-amber-900"
         >
-          Waiting for your person…
+          Waiting for {partnerName || "your person"}…
         </Link>
         <form action={sendNudgeAction}>
           <SubmitButton
