@@ -78,7 +78,17 @@ export function getPartnerId(couple: { member1: string; member2: string | null }
   return couple.member1 === userId ? couple.member2 : couple.member1;
 }
 
-export async function ensureDailySession(coupleId: string) {
+// Returns the 1-indexed week number for a couple based on their joined_date.
+// Uses UTC calendar dates on both sides to avoid timezone drift.
+function coupleWeekNumber(joinedDate: string): number {
+  const msPerDay = 86_400_000;
+  const joined = new Date(joinedDate + "T00:00:00Z").getTime();
+  const today = new Date(new Date().toISOString().slice(0, 10) + "T00:00:00Z").getTime();
+  const daysSinceJoined = Math.floor((today - joined) / msPerDay);
+  return Math.floor(daysSinceJoined / 7) + 1;
+}
+
+export async function ensureDailySession(coupleId: string, coupleJoinedDate: string) {
   const supabase = await createClient();
   const today = new Date().toISOString().slice(0, 10);
   const dow = new Date().getDay(); // 0-6, Sunday=0
@@ -94,26 +104,57 @@ export async function ensureDailySession(coupleId: string) {
 
   if (existing) return existing;
 
-  // Primary lookup by day index; fallback to any active daily set
+  // Determine the highest week_number available so we can cycle gracefully
+  const { data: maxRow } = await supabase
+    .from("content_sets")
+    .select("week_number")
+    .eq("type", "daily")
+    .eq("is_active", true)
+    .order("week_number", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const maxWeek = maxRow?.week_number ?? 1;
+  const rawWeek = coupleWeekNumber(coupleJoinedDate);
+  const effectiveWeek = ((rawWeek - 1) % maxWeek) + 1; // 1-indexed cycle
+
+  // Primary lookup: exact week + day
   let { data: set } = await supabase
     .from("content_sets")
     .select("id")
     .eq("type", "daily")
     .eq("day_index", dayIndex)
+    .eq("week_number", effectiveWeek)
     .eq("is_active", true)
     .limit(1)
     .maybeSingle();
 
+  // Fallback: same week, any day
   if (!set?.id) {
     const fallback = await supabase
       .from("content_sets")
       .select("id")
       .eq("type", "daily")
+      .eq("week_number", effectiveWeek)
       .eq("is_active", true)
       .order("day_index", { ascending: true })
       .limit(1)
       .maybeSingle();
     set = fallback.data ?? null;
+  }
+
+  // Last resort: any active daily set
+  if (!set?.id) {
+    const lastResort = await supabase
+      .from("content_sets")
+      .select("id")
+      .eq("type", "daily")
+      .eq("is_active", true)
+      .order("week_number", { ascending: true })
+      .order("day_index", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    set = lastResort.data ?? null;
   }
 
   if (!set?.id) return null;
@@ -133,7 +174,7 @@ export async function ensureDailySession(coupleId: string) {
   return created;
 }
 
-export async function ensureWeeklySession(coupleId: string) {
+export async function ensureWeeklySession(coupleId: string, coupleJoinedDate: string) {
   const supabase = await createClient();
   const now = new Date();
   const day = now.getDay();
@@ -152,13 +193,42 @@ export async function ensureWeeklySession(coupleId: string) {
 
   if (existing) return existing;
 
-  const { data: set } = await supabase
+  // Determine the highest week_number available for weekly sets
+  const { data: maxRow } = await supabase
+    .from("content_sets")
+    .select("week_number")
+    .eq("type", "weekly")
+    .eq("is_active", true)
+    .order("week_number", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const maxWeek = maxRow?.week_number ?? 1;
+  const rawWeek = coupleWeekNumber(coupleJoinedDate);
+  const effectiveWeek = ((rawWeek - 1) % maxWeek) + 1;
+
+  // Primary lookup: matching week
+  let { data: set } = await supabase
     .from("content_sets")
     .select("id")
     .eq("type", "weekly")
+    .eq("week_number", effectiveWeek)
     .eq("is_active", true)
     .limit(1)
     .maybeSingle();
+
+  // Fallback: any active weekly set
+  if (!set?.id) {
+    const fallback = await supabase
+      .from("content_sets")
+      .select("id")
+      .eq("type", "weekly")
+      .eq("is_active", true)
+      .order("week_number", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    set = fallback.data ?? null;
+  }
 
   if (!set?.id) return null;
 
