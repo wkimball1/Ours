@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureProfile, getMe, getMyCouple, getPartnerId, refreshSessionUnlock } from "@/lib/ours";
 import { sendLoveNoteEmail, sendReassuranceRequestEmail, sendReassuranceMessageEmail, sendSessionUnlockedEmail } from "@/lib/email";
 import crypto from "crypto";
@@ -154,7 +155,7 @@ export async function acceptInviteAction(formData: FormData): Promise<void> {
   }
 
   await trackEvent("partner_connected", { ...attribution, token_prefix: token.slice(0, 8) });
-  redirect("/app");
+  redirect("/app/daily");
 }
 
 export async function saveResponseAction(formData: FormData) {
@@ -771,6 +772,12 @@ export async function deleteAccountAction() {
     } else {
       await supabase.from("couples").delete().eq("id", couple.id);
     }
+  }
+
+  // Delete the auth user so credentials can't be reused after account deletion
+  const admin = createAdminClient();
+  if (admin) {
+    await admin.auth.admin.deleteUser(user.id);
   }
 
   await supabase.auth.signOut();

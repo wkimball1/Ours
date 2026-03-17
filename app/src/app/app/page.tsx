@@ -53,11 +53,11 @@ export default async function AppHomePage() {
 
   const partnerId = getPartnerId(couple, user.id);
 
-  let partnerPresence: { first_name: string; last_active_at: string | null; avatar_url: string | null } | null = null;
+  let partnerPresence: { first_name: string; last_active_at: string | null; avatar_url: string | null; timezone: string | null } | null = null;
   if (partnerId) {
     const { data: partnerProfile } = await supabase
       .from("profiles")
-      .select("first_name, last_active_at, avatar_url")
+      .select("first_name, last_active_at, avatar_url, timezone")
       .eq("id", partnerId)
       .single();
     partnerPresence = partnerProfile;
@@ -105,9 +105,16 @@ export default async function AppHomePage() {
               ) : (
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-card/20 text-sm">🤍</div>
               )}
-              <p className={`text-xs font-medium ${timeAgo(partnerPresence.last_active_at) === "Active now" ? "text-emerald-300" : "text-stone-400"}`}>
-                {partnerPresence.first_name ? `${partnerPresence.first_name}: ` : ""}{timeAgo(partnerPresence.last_active_at)}
-              </p>
+              <div>
+                <p className={`text-xs font-medium ${timeAgo(partnerPresence.last_active_at) === "Active now" ? "text-emerald-300" : "text-stone-400"}`}>
+                  {partnerPresence.first_name ? `${partnerPresence.first_name}: ` : ""}{timeAgo(partnerPresence.last_active_at)}
+                </p>
+                {partnerPresence.timezone && (
+                  <p className="text-xs text-white/40">
+                    {new Date().toLocaleTimeString("en-US", { timeZone: partnerPresence.timezone, hour: "numeric", minute: "2-digit", hour12: true })} their time
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </div>

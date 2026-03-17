@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { ensureWeeklySession, getMyData, getPartnerId } from "@/lib/ours";
 import { SessionForm } from "@/components/session-form";
+import { SessionRefresher } from "@/components/session-refresher";
 
 export default async function WeeklyPage() {
   const supabase = await createClient();
@@ -26,6 +27,7 @@ export default async function WeeklyPage() {
   ]);
 
   const existing = Object.fromEntries((mine ?? []).map((r) => [r.step_index, r.response_text]));
+  const promptMap = Object.fromEntries((prompts ?? []).map((p) => [p.step_index, p.prompt_text]));
 
   const totalPrompts = prompts?.length ?? 0;
   const mineCount = (mine ?? []).filter((r) => (r.response_text ?? "").trim().length > 0).length;
@@ -33,6 +35,7 @@ export default async function WeeklyPage() {
 
   return (
     <section className="space-y-5">
+      <SessionRefresher sessionStatus={session.status} />
       <div className="space-y-1">
         <div className="flex items-baseline gap-2">
           <h2 className="text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Weekly reset</h2>
@@ -59,17 +62,23 @@ export default async function WeeklyPage() {
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
             <p className="font-semibold text-stone-900 dark:text-stone-100">Your weekly reset</p>
-            <div className="mt-3 space-y-2 text-sm text-stone-700 dark:text-stone-200">
+            <div className="mt-3 space-y-4 text-sm text-stone-700 dark:text-stone-200">
               {(mine ?? []).map((r) => (
-                <p key={r.step_index}><span className="font-semibold text-stone-900 dark:text-stone-100">Step {r.step_index}:</span> {r.response_text}</p>
+                <div key={r.step_index} className="space-y-1">
+                  {promptMap[r.step_index] && <p className="text-xs text-stone-400 dark:text-stone-500">{promptMap[r.step_index]}</p>}
+                  <p>{r.response_text}</p>
+                </div>
               ))}
             </div>
           </div>
           <div className="rounded-2xl border border-[var(--border)] bg-card p-5 shadow-sm">
             <p className="font-semibold text-stone-900 dark:text-stone-100">Partner weekly reset</p>
-            <div className="mt-3 space-y-2 text-sm text-stone-700 dark:text-stone-200">
+            <div className="mt-3 space-y-4 text-sm text-stone-700 dark:text-stone-200">
               {(partnerRows ?? []).map((r) => (
-                <p key={r.step_index}><span className="font-semibold text-stone-900 dark:text-stone-100">Step {r.step_index}:</span> {r.response_text}</p>
+                <div key={r.step_index} className="space-y-1">
+                  {promptMap[r.step_index] && <p className="text-xs text-stone-400 dark:text-stone-500">{promptMap[r.step_index]}</p>}
+                  <p>{r.response_text}</p>
+                </div>
               ))}
             </div>
           </div>
