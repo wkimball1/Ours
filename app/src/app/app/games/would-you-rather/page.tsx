@@ -12,6 +12,7 @@ export default async function WouldYouRatherPage() {
   const { premium } = await getSubscriptionInfo(couple.id);
   if (!premium) return <PaywallGate feature="Would You Rather" />;
 
+  const today = new Date().toISOString().slice(0, 10);
   const dayOfYear = getDayOfYear();
 
   const { data: questions } = await supabase
@@ -33,9 +34,9 @@ export default async function WouldYouRatherPage() {
   const partnerId = getPartnerId(couple, user.id);
 
   const [{ data: myAnswer }, { data: partnerAnswer }] = await Promise.all([
-    supabase.from("would_you_rather_answers").select("choice, guess").eq("couple_id", couple.id).eq("user_id", user.id).eq("question_id", todaysQuestion.id).maybeSingle(),
+    supabase.from("would_you_rather_answers").select("choice, guess").eq("couple_id", couple.id).eq("user_id", user.id).eq("session_date", today).maybeSingle(),
     partnerId
-      ? supabase.from("would_you_rather_answers").select("choice, guess").eq("couple_id", couple.id).eq("user_id", partnerId).eq("question_id", todaysQuestion.id).maybeSingle()
+      ? supabase.from("would_you_rather_answers").select("choice, guess").eq("couple_id", couple.id).eq("user_id", partnerId).eq("session_date", today).maybeSingle()
       : Promise.resolve({ data: null }),
   ]);
 

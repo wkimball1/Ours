@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getMyData, getSubscriptionInfo, getDayOfYear } from "@/lib/ours";
+import { getMyData, getSubscriptionInfo } from "@/lib/ours";
 import { PaywallGate } from "@/components/paywall-gate";
 
 export default async function GamesHub() {
@@ -15,30 +15,16 @@ export default async function GamesHub() {
 
   const supabase = await createClient();
   const today = new Date().toISOString().slice(0, 10);
-  const dayOfYear = getDayOfYear();
-
-  // Find today's WYR question ID so we can check if user answered it
-  const { data: wyrQuestions } = await supabase
-    .from("would_you_rather_questions")
-    .select("id")
-    .eq("is_active", true)
-    .order("day_index");
-
-  const todaysWyrId = wyrQuestions?.length
-    ? wyrQuestions[(dayOfYear - 1) % wyrQuestions.length].id
-    : null;
 
   const [wyrRow, drawRow, { count: totAnswered }] = await Promise.all([
-    todaysWyrId
-      ? supabase
-          .from("would_you_rather_answers")
-          .select("choice")
-          .eq("couple_id", couple.id)
-          .eq("user_id", user.id)
-          .eq("question_id", todaysWyrId)
-          .maybeSingle()
-          .then((r) => r.data)
-      : Promise.resolve(null),
+    supabase
+      .from("would_you_rather_answers")
+      .select("choice")
+      .eq("couple_id", couple.id)
+      .eq("user_id", user.id)
+      .eq("session_date", today)
+      .maybeSingle()
+      .then((r) => r.data),
     supabase
       .from("drawings")
       .select("id")

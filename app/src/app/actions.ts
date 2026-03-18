@@ -409,14 +409,15 @@ export async function answerWouldYouRatherAction(formData: FormData) {
   const questionId = String(formData.get("question_id") || "");
   const choice = String(formData.get("choice") || "");
   const guess = String(formData.get("guess") || "");
+  const today = new Date().toISOString().slice(0, 10);
   if (!questionId || !["a", "b"].includes(choice)) return;
 
-  const row: Record<string, string> = { couple_id: couple.id, user_id: user.id, question_id: questionId, choice };
+  const row: Record<string, string> = { couple_id: couple.id, user_id: user.id, question_id: questionId, choice, session_date: today };
   if (["a", "b"].includes(guess)) row.guess = guess;
 
   await supabase.from("would_you_rather_answers").upsert(
     row,
-    { onConflict: "couple_id,user_id,question_id" }
+    { onConflict: "couple_id,user_id,session_date" }
   );
 
   if (couple.member2) {
