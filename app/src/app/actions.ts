@@ -207,7 +207,14 @@ export async function saveSessionResponsesAction(formData: FormData) {
 
   if (!entries.length) return;
 
-  await supabase.from("responses").upsert(entries, { onConflict: "session_id,user_id,step_index" });
+  const { error: upsertError } = await supabase
+    .from("responses")
+    .upsert(entries, { onConflict: "session_id,user_id,step_index" });
+
+  if (upsertError) {
+    const path = formData.get("session_type") === "weekly" ? "/app/weekly" : "/app/daily";
+    return redirect(`${path}?error=Something+went+wrong+saving+your+responses.+Please+try+again.`);
+  }
 
   const couple = await getMyCouple();
   if (couple) {
@@ -305,7 +312,7 @@ export async function saveSettingsAction(formData: FormData) {
   const couple = await getMyCouple();
   if (!user) return;
 
-  const firstName = String(formData.get("first_name") || "");
+  const firstName = String(formData.get("first_name") || "").trim().slice(0, 100);
   const timezone = String(formData.get("timezone") || "America/New_York");
   const nextVisitDate = String(formData.get("next_visit_date") || "");
   const relationshipStartDate = String(formData.get("relationship_start_date") || "");
@@ -319,7 +326,12 @@ export async function saveSettingsAction(formData: FormData) {
     return redirect("/app/settings?error=Relationship+start+date+can%27t+be+in+the+future");
   }
 
-  await supabase.from("profiles").update({ first_name: firstName, timezone }).eq("id", user.id);
+  const { error } = await supabase
+    .from("profiles")
+    .update({ first_name: firstName, timezone })
+    .eq("id", user.id);
+
+  if (error) return redirect("/app/settings?error=Something+went+wrong.+Please+try+again.");
 
   if (couple) {
     await supabase
@@ -505,12 +517,14 @@ export async function sendLoveNoteAction(formData: FormData) {
 
   const toUserId = getPartnerId(couple, user.id)!;
 
-  await supabase.from("love_notes").insert({
+  const { error } = await supabase.from("love_notes").insert({
     couple_id: couple.id,
     from_user_id: user.id,
     to_user_id: toUserId,
     message,
   });
+
+  if (error) return redirect("/app/love-notes?error=Something+went+wrong.+Please+try+again.");
 
   const { data: myProfile } = await supabase.from("profiles").select("first_name").eq("id", user.id).single();
   void sendLoveNoteEmail(toUserId, myProfile?.first_name || "Your partner");
@@ -615,12 +629,27 @@ export async function uploadAvatarAction(formData: FormData) {
   if (!user) return;
 
   const dataUrl = String(formData.get("avatar_data_url") || "");
-  if (!dataUrl.startsWith("data:image/")) return;
+  const mimeMatch = dataUrl.match(/^data:(image\/(?:png|jpeg|webp|gif));base64,/);
+  if (!mimeMatch) return;
 
+  const mimeType = mimeMatch[1];
   // ~1.37 MB base64 ceiling for a 1 MB source image
   if (dataUrl.length > 1_400_000) return;
 
-  await supabase.from("profiles").update({ avatar_url: dataUrl }).eq("id", user.id);
+  const base64Data = dataUrl.slice(dataUrl.indexOf(",") + 1);
+  const buffer = Buffer.from(base64Data, "base64");
+
+  const { error: uploadError } = await supabase.storage
+    .from("avatars")
+    .upload(`${user.id}/avatar`, buffer, { contentType: mimeType, upsert: true });
+
+  if (uploadError) return;
+
+  const { data: { publicUrl } } = supabase.storage
+    .from("avatars")
+    .getPublicUrl(`${user.id}/avatar`);
+
+  await supabase.from("profiles").update({ avatar_url: publicUrl }).eq("id", user.id);
   revalidatePath("/app");
   revalidatePath("/app/settings");
 }
@@ -780,6 +809,12 @@ export async function deleteAccountAction() {
   const user = await getMe();
   if (!user) return redirect("/login");
 
+  // Require admin client — without it we can't fully delete the auth user (GDPR)
+  const admin = createAdminClient();
+  if (!admin) {
+    return redirect("/app/settings?error=Account+deletion+is+temporarily+unavailable.+Please+contact+support.");
+  }
+
   await supabase
     .from("profiles")
     .update({ first_name: "[deleted]", timezone: "UTC", last_active_at: null })
@@ -796,12 +831,7 @@ export async function deleteAccountAction() {
     }
   }
 
-  // Delete the auth user so credentials can't be reused after account deletion
-  const admin = createAdminClient();
-  if (admin) {
-    await admin.auth.admin.deleteUser(user.id);
-  }
-
+  await admin.auth.admin.deleteUser(user.id);
   await supabase.auth.signOut();
   redirect("/");
 }

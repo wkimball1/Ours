@@ -63,6 +63,7 @@ export async function sendReassuranceRequestEmail(toUserId: string, fromName: st
 }
 
 export async function sendReassuranceMessageEmail(toUserId: string, fromName: string, message: string) {
+  if (!(await checkEmailPref(toUserId, "email_reassurance"))) return;
   const email = await getUserEmail(toUserId);
   if (!email) return;
   await send(
