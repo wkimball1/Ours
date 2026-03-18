@@ -1,35 +1,85 @@
 import Link from "next/link";
-import { getMyData, getSubscriptionInfo } from "@/lib/ours";
+import { createClient } from "@/lib/supabase/server";
+import { getMyData, getSubscriptionInfo, getDayOfYear } from "@/lib/ours";
 import { PaywallGate } from "@/components/paywall-gate";
 
-const games = [
-  {
-    href: "/app/games/would-you-rather",
-    title: "Would You Rather",
-    description: "A new question each day. Answer independently, then see if you matched.",
-    emoji: "🤔",
-  },
-  {
-    href: "/app/games/draw",
-    title: "Draw Together",
-    description: "A daily prompt. Both of you draw, then reveal your creations side by side.",
-    emoji: "🎨",
-  },
-  {
-    href: "/app/games/this-or-that",
-    title: "This or That",
-    description: "Quick picks that reveal how alike (or different) you really are.",
-    emoji: "⚡",
-  },
-];
-
 export default async function GamesHub() {
-  const { couple } = await getMyData();
+  const { user, couple } = await getMyData();
 
-  if (couple) {
-    const { premium } = await getSubscriptionInfo(couple.id);
-    if (!premium) return <PaywallGate feature="Games" />;
+  if (!couple || !user) {
+    return <p className="text-sm text-stone-600">Set up your couple first.</p>;
   }
+
+  const { premium } = await getSubscriptionInfo(couple.id);
+  if (!premium) return <PaywallGate feature="Games" />;
+
+  const supabase = await createClient();
+  const today = new Date().toISOString().slice(0, 10);
+  const dayOfYear = getDayOfYear();
+
+  // Find today's WYR question ID so we can check if user answered it
+  const { data: wyrQuestions } = await supabase
+    .from("would_you_rather_questions")
+    .select("id")
+    .eq("is_active", true)
+    .order("day_index");
+
+  const todaysWyrId = wyrQuestions?.length
+    ? wyrQuestions[(dayOfYear - 1) % wyrQuestions.length].id
+    : null;
+
+  const [wyrRow, drawRow, { count: totAnswered }] = await Promise.all([
+    todaysWyrId
+      ? supabase
+          .from("would_you_rather_answers")
+          .select("choice")
+          .eq("couple_id", couple.id)
+          .eq("user_id", user.id)
+          .eq("question_id", todaysWyrId)
+          .maybeSingle()
+          .then((r) => r.data)
+      : Promise.resolve(null),
+    supabase
+      .from("drawings")
+      .select("id")
+      .eq("couple_id", couple.id)
+      .eq("user_id", user.id)
+      .eq("session_date", today)
+      .maybeSingle()
+      .then((r) => r.data),
+    supabase
+      .from("this_or_that_answers")
+      .select("*", { count: "exact", head: true })
+      .eq("couple_id", couple.id)
+      .eq("user_id", user.id),
+  ]);
+
+  const games = [
+    {
+      href: "/app/games/would-you-rather",
+      title: "Would You Rather",
+      description: "A new question each day. Answer honestly — no peeking.",
+      emoji: "🤔",
+      status: wyrRow ? "Done today ✓" : "New today",
+      done: !!wyrRow,
+    },
+    {
+      href: "/app/games/draw",
+      title: "Draw Together",
+      description: "A daily prompt. Both of you draw, then reveal your creations side by side.",
+      emoji: "🎨",
+      status: drawRow ? "Drawn today ✓" : "New today",
+      done: !!drawRow,
+    },
+    {
+      href: "/app/games/this-or-that",
+      title: "This or That",
+      description: "Quick picks that reveal how alike (or different) you really are.",
+      emoji: "⚡",
+      status: totAnswered ? `${totAnswered} picks made` : "Get started",
+      done: false,
+    },
+  ];
 
   return (
     <section className="space-y-5">
@@ -43,13 +93,22 @@ export default async function GamesHub() {
           <Link
             key={game.href}
             href={game.href}
-            className="group rounded-2xl border border-[var(--border)] bg-card p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            className="group relative rounded-2xl border border-[var(--border)] bg-card p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
           >
-            <span className="text-3xl">{game.emoji}</span>
+            <div className="flex items-start justify-between gap-2">
+              <span className="text-3xl">{game.emoji}</span>
+              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                game.done
+                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                  : "bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400"
+              }`}>
+                {game.status}
+              </span>
+            </div>
             <h3 className="mt-3 font-semibold text-stone-900 dark:text-stone-100">{game.title}</h3>
             <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">{game.description}</p>
             <span className="mt-4 inline-block text-sm font-medium text-stone-900 underline decoration-stone-300 underline-offset-4 transition group-hover:decoration-stone-900 dark:text-stone-100 dark:decoration-stone-600 dark:group-hover:decoration-stone-100">
-              Play now
+              {game.done ? "View →" : "Play now →"}
             </span>
           </Link>
         ))}

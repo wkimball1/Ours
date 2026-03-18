@@ -1,12 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMyData, getPartnerId, getDayOfYear } from "@/lib/ours";
+import { getMyData, getPartnerId, getDayOfYear, getSubscriptionInfo } from "@/lib/ours";
 import { WouldYouRatherCard } from "@/components/would-you-rather-card";
+import { PaywallGate } from "@/components/paywall-gate";
 
 export default async function WouldYouRatherPage() {
   const supabase = await createClient();
   const { user, couple } = await getMyData();
 
   if (!user || !couple) return <p className="text-sm text-stone-600">Set up your couple first.</p>;
+
+  const { premium } = await getSubscriptionInfo(couple.id);
+  if (!premium) return <PaywallGate feature="Would You Rather" />;
 
   const dayOfYear = getDayOfYear();
 

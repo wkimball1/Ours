@@ -77,6 +77,12 @@ function SettingsMenu() {
           >
             Settings
           </Link>
+          <Link
+            href="/app/settings/billing"
+            className="block px-4 py-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-800"
+          >
+            Billing
+          </Link>
           <div className="my-1 border-t border-[var(--border)]" />
           <form action={logoutAction}>
             <button className="block w-full px-4 py-2.5 text-left text-sm font-medium text-stone-500 transition hover:bg-stone-50 hover:text-stone-700 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200">

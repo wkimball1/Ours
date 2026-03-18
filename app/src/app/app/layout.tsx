@@ -1,5 +1,4 @@
 import { AppShell } from "@/components/app-shell";
-import { OnboardingModal } from "@/components/onboarding-modal";
 import { ensureProfile, getMyCouple } from "@/lib/ours";
 import { createClient } from "@/lib/supabase/server";
 
@@ -19,10 +18,5 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     unreadNotes = count ?? 0;
   }
 
-  return (
-    <>
-      <OnboardingModal hasPartner={!!couple?.member2} />
-      <AppShell unreadNotes={unreadNotes}>{children}</AppShell>
-    </>
-  );
+  return <AppShell unreadNotes={unreadNotes}>{children}</AppShell>;
 }

@@ -1,12 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMyData, getPartnerId, getDayOfYear } from "@/lib/ours";
+import { getMyData, getPartnerId, getDayOfYear, getSubscriptionInfo } from "@/lib/ours";
 import { DrawingCanvas } from "@/components/drawing-canvas";
+import { PaywallGate } from "@/components/paywall-gate";
 
 export default async function DrawPage() {
   const supabase = await createClient();
   const { user, couple } = await getMyData();
 
   if (!user || !couple) return <p className="text-sm text-stone-600">Set up your couple first.</p>;
+
+  const { premium } = await getSubscriptionInfo(couple.id);
+  if (!premium) return <PaywallGate feature="Draw Together" />;
 
   const today = new Date().toISOString().slice(0, 10);
   const dayOfYear = getDayOfYear();
@@ -29,12 +33,17 @@ export default async function DrawPage() {
   const todaysPrompt = prompts[(dayOfYear - 1) % prompts.length];
   const partnerId = getPartnerId(couple, user.id);
 
-  const [{ data: myDrawing }, { data: partnerDrawing }] = await Promise.all([
+  const [{ data: myDrawing }, { data: partnerDrawing }, { data: partnerProfile }] = await Promise.all([
     supabase.from("drawings").select("drawing_data").eq("couple_id", couple.id).eq("user_id", user.id).eq("session_date", today).maybeSingle(),
     partnerId
       ? supabase.from("drawings").select("drawing_data").eq("couple_id", couple.id).eq("user_id", partnerId).eq("session_date", today).maybeSingle()
       : Promise.resolve({ data: null }),
+    partnerId
+      ? supabase.from("profiles").select("first_name").eq("id", partnerId).single()
+      : Promise.resolve({ data: null }),
   ]);
+
+  const partnerName = partnerProfile?.first_name || "Their";
 
   const bothDone = !!myDrawing && !!partnerDrawing;
 
@@ -85,9 +94,9 @@ export default async function DrawPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Theirs</p>
+              <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">{partnerName}&apos;s</p>
               <div className="overflow-hidden rounded-2xl border border-[var(--border)] shadow-sm">
-                <img src={partnerDrawing.drawing_data} alt="Partner drawing" className="w-full" />
+                <img src={partnerDrawing.drawing_data} alt={`${partnerName}'s drawing`} className="w-full" />
               </div>
             </div>
           </div>
