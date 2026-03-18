@@ -1,12 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
-import { ensureWeeklySession, getMyData, getPartnerId } from "@/lib/ours";
+import { ensureWeeklySession, getMyData, getPartnerId, getSubscriptionInfo } from "@/lib/ours";
 import { SessionForm } from "@/components/session-form";
 import { SessionRefresher } from "@/components/session-refresher";
+import { PaywallGate } from "@/components/paywall-gate";
 
 export default async function WeeklyPage() {
   const supabase = await createClient();
   const { user, couple } = await getMyData();
   if (!user || !couple) return <p>Set up your couple first.</p>;
+
+  const { premium } = await getSubscriptionInfo(couple.id);
+  if (!premium) return <PaywallGate feature="Weekly Reset" />;
 
   const session = await ensureWeeklySession(couple.id, couple.created_at.slice(0, 10));
   if (!session) return <p className="text-sm text-stone-600 dark:text-stone-400">This week&apos;s check-in is being prepared. Check back soon!</p>;

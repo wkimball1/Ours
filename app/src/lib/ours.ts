@@ -247,6 +247,49 @@ export async function ensureWeeklySession(coupleId: string, coupleJoinedDate: st
   return created;
 }
 
+export type SubscriptionInfo = {
+  premium: boolean;
+  trialDaysLeft: number | null; // null = has active stripe sub; 0 = trial expired
+};
+
+export async function getSubscriptionInfo(coupleId: string): Promise<SubscriptionInfo> {
+  const supabase = await createClient();
+
+  const [{ data: sub }, { data: couple }] = await Promise.all([
+    supabase
+      .from("subscriptions")
+      .select("status, current_period_end")
+      .eq("couple_id", coupleId)
+      .maybeSingle(),
+    supabase
+      .from("couples")
+      .select("trial_ends_at")
+      .eq("id", coupleId)
+      .single(),
+  ]);
+
+  // Active Stripe subscription
+  if (sub?.status === "active" || sub?.status === "trialing") {
+    if (!sub.current_period_end || new Date(sub.current_period_end) > new Date()) {
+      return { premium: true, trialDaysLeft: null };
+    }
+  }
+
+  // Free trial window
+  if (couple?.trial_ends_at) {
+    const msLeft = new Date(couple.trial_ends_at).getTime() - Date.now();
+    if (msLeft > 0) {
+      return { premium: true, trialDaysLeft: Math.ceil(msLeft / 86_400_000) };
+    }
+  }
+
+  return { premium: false, trialDaysLeft: 0 };
+}
+
+export async function isPremium(coupleId: string): Promise<boolean> {
+  return (await getSubscriptionInfo(coupleId)).premium;
+}
+
 export async function refreshSessionUnlock(sessionId: string, couple: { member1: string; member2: string | null }): Promise<boolean> {
   if (!couple.member2) return false;
   const supabase = await createClient();

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createCoupleAction, generateInviteAction, sendNudgeAction } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
-import { ensureDailySession, ensureWeeklySession, getMyData, getPartnerId } from "@/lib/ours";
+import { ensureDailySession, ensureWeeklySession, getMyData, getPartnerId, getSubscriptionInfo } from "@/lib/ours";
 import { InviteShare } from "@/components/invite-share";
 import { OnboardingModal } from "@/components/onboarding-modal";
 import { SubmitButton } from "@/components/submit-button";
@@ -38,9 +38,12 @@ export default async function AppHomePage() {
     );
   }
 
-  const [daily, weekly] = await Promise.all([
-    ensureDailySession(couple.id, couple.created_at.slice(0, 10)),
-    ensureWeeklySession(couple.id, couple.created_at.slice(0, 10)),
+  const [{ premium, trialDaysLeft }, [daily, weekly]] = await Promise.all([
+    getSubscriptionInfo(couple.id),
+    Promise.all([
+      ensureDailySession(couple.id, couple.created_at.slice(0, 10)),
+      ensureWeeklySession(couple.id, couple.created_at.slice(0, 10)),
+    ]),
   ]);
 
   if (!daily || !weekly) {
@@ -98,6 +101,26 @@ export default async function AppHomePage() {
 
   return (
     <>
+    {!premium && (
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950">
+        <p className="text-sm font-semibold text-red-900 dark:text-red-100">Your free trial has ended</p>
+        <p className="mt-1 text-sm text-red-700 dark:text-red-300">Subscribe to keep your connection going.</p>
+        <a href="/app/settings/billing" className="mt-3 inline-flex min-h-9 items-center rounded-lg border border-red-300 bg-red-100 px-3 py-1.5 text-xs font-medium text-red-800 hover:bg-red-200 dark:border-red-700 dark:bg-red-900 dark:text-red-200">
+          See plans →
+        </a>
+      </div>
+    )}
+    {premium && trialDaysLeft !== null && trialDaysLeft <= 5 && (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
+        <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+          {trialDaysLeft === 1 ? "1 day left in your free trial" : `${trialDaysLeft} days left in your free trial`}
+        </p>
+        <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">Subscribe to keep everything you&apos;ve built here.</p>
+        <a href="/app/settings/billing" className="mt-3 inline-flex min-h-9 items-center rounded-lg border border-amber-300 bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-200 dark:border-amber-700 dark:bg-amber-900 dark:text-amber-200">
+          Subscribe now →
+        </a>
+      </div>
+    )}
     <OnboardingModal
         hasPartner={!!couple.member2}
         isPartner2={couple.member2 === user.id}

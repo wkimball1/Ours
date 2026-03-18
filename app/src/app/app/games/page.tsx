@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getMyData, getSubscriptionInfo } from "@/lib/ours";
+import { PaywallGate } from "@/components/paywall-gate";
 
 const games = [
   {
@@ -21,7 +23,14 @@ const games = [
   },
 ];
 
-export default function GamesHub() {
+export default async function GamesHub() {
+  const { couple } = await getMyData();
+
+  if (couple) {
+    const { premium } = await getSubscriptionInfo(couple.id);
+    if (!premium) return <PaywallGate feature="Games" />;
+  }
+
   return (
     <section className="space-y-5">
       <div>

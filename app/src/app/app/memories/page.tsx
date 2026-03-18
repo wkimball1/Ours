@@ -1,12 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMyData, getPartnerId } from "@/lib/ours";
+import { getMyData, getPartnerId, getSubscriptionInfo } from "@/lib/ours";
 import { MemoriesTimeline, type TimelineItem } from "@/components/memories-timeline";
+import { PaywallGate } from "@/components/paywall-gate";
 
 export default async function MemoriesPage() {
   const supabase = await createClient();
   const { user, couple } = await getMyData();
 
   if (!user || !couple) return <p className="text-sm text-stone-600">Set up your couple first.</p>;
+
+  const { premium } = await getSubscriptionInfo(couple.id);
+  if (!premium) return <PaywallGate feature="Memories" />;
 
   const timeline: TimelineItem[] = [];
 

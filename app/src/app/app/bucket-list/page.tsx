@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMyData } from "@/lib/ours";
+import { getMyData, getSubscriptionInfo } from "@/lib/ours";
 import { addBucketItemAction, toggleBucketItemAction, deleteBucketItemAction } from "@/app/actions";
+import { PaywallGate } from "@/components/paywall-gate";
 import { LocalTime } from "@/components/local-time";
 import { SubmitButton } from "@/components/submit-button";
 
@@ -9,6 +10,9 @@ export default async function BucketListPage() {
   const { user, couple } = await getMyData();
 
   if (!user || !couple) return <p className="text-sm text-stone-600">Set up your couple first.</p>;
+
+  const { premium } = await getSubscriptionInfo(couple.id);
+  if (!premium) return <PaywallGate feature="Bucket List" />;
 
   const { data: items } = await supabase
     .from("bucket_list_items")

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
-import { getMyData } from "@/lib/ours";
+import { getMyData, getSubscriptionInfo } from "@/lib/ours";
 import { deleteJournalEntryAction } from "@/app/actions";
+import { PaywallGate } from "@/components/paywall-gate";
 import { LocalTime } from "@/components/local-time";
 import { JournalForm } from "@/components/journal-form";
 
@@ -9,6 +10,9 @@ export default async function JournalPage() {
   const { user, couple } = await getMyData();
 
   if (!user || !couple) return <p className="text-sm text-stone-600">Set up your couple first.</p>;
+
+  const { premium } = await getSubscriptionInfo(couple.id);
+  if (!premium) return <PaywallGate feature="Our Journal" />;
 
   const { data: entries } = await supabase
     .from("journal_entries")
