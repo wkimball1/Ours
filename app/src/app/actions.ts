@@ -507,6 +507,38 @@ export async function answerThisOrThatAction(formData: FormData) {
   revalidatePath("/app/games/this-or-that");
 }
 
+export async function saveFinishSentenceAction(formData: FormData) {
+  const supabase = await createClient();
+  const user = await getMe();
+  const couple = await getMyCouple();
+  if (!user || !couple) return;
+
+  const promptId = String(formData.get("prompt_id") || "");
+  const answerText = String(formData.get("answer_text") || "").trim();
+  if (!promptId || !answerText || answerText.length > 1000) return;
+
+  const today = new Date().toISOString().slice(0, 10);
+  await supabase.from("finish_sentence_answers").upsert(
+    { couple_id: couple.id, user_id: user.id, prompt_id: promptId, answer_text: answerText, session_date: today },
+    { onConflict: "couple_id,user_id,session_date" }
+  );
+
+  if (couple.member2) {
+    const partnerId = getPartnerId(couple, user.id);
+    if (partnerId) {
+      void supabase.from("notifications").insert({
+        couple_id: couple.id,
+        to_user_id: partnerId,
+        from_user_id: user.id,
+        type: "game_answered",
+        payload: { game: "Finish the Sentence", href: "/app/games/finish-the-sentence" },
+      });
+    }
+  }
+
+  revalidatePath("/app/games/finish-the-sentence");
+}
+
 export async function sendLoveNoteAction(formData: FormData) {
   const supabase = await createClient();
   const user = await getMe();

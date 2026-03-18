@@ -16,15 +16,7 @@ export default async function GamesHub() {
   const supabase = await createClient();
   const today = new Date().toISOString().slice(0, 10);
 
-  const [wyrRow, drawRow, { count: totAnswered }] = await Promise.all([
-    supabase
-      .from("would_you_rather_answers")
-      .select("choice")
-      .eq("couple_id", couple.id)
-      .eq("user_id", user.id)
-      .eq("session_date", today)
-      .maybeSingle()
-      .then((r) => r.data),
+  const [drawRow, { count: totAnswered }, ftsRow] = await Promise.all([
     supabase
       .from("drawings")
       .select("id")
@@ -38,16 +30,32 @@ export default async function GamesHub() {
       .select("*", { count: "exact", head: true })
       .eq("couple_id", couple.id)
       .eq("user_id", user.id),
+    supabase
+      .from("finish_sentence_answers")
+      .select("id")
+      .eq("couple_id", couple.id)
+      .eq("user_id", user.id)
+      .eq("session_date", today)
+      .maybeSingle()
+      .then((r) => r.data),
   ]);
 
   const games = [
     {
-      href: "/app/games/would-you-rather",
-      title: "Would You Rather",
-      description: "A new question each day. Answer honestly — no peeking.",
-      emoji: "🤔",
-      status: wyrRow ? "Done today ✓" : "New today",
-      done: !!wyrRow,
+      href: "/app/games/this-or-that",
+      title: "This or That",
+      description: "Preferences, hypotheticals, and the occasional curveball. See how well you really know each other.",
+      emoji: "⚡",
+      status: totAnswered ? `${totAnswered} picks made` : "Get started",
+      done: false,
+    },
+    {
+      href: "/app/games/finish-the-sentence",
+      title: "Finish the Sentence",
+      description: "A daily prompt. Write your ending before your partner does — then compare.",
+      emoji: "✍️",
+      status: ftsRow ? "Written today ✓" : "New today",
+      done: !!ftsRow,
     },
     {
       href: "/app/games/draw",
@@ -56,14 +64,6 @@ export default async function GamesHub() {
       emoji: "🎨",
       status: drawRow ? "Drawn today ✓" : "New today",
       done: !!drawRow,
-    },
-    {
-      href: "/app/games/this-or-that",
-      title: "This or That",
-      description: "Quick picks that reveal how alike (or different) you really are.",
-      emoji: "⚡",
-      status: totAnswered ? `${totAnswered} picks made` : "Get started",
-      done: false,
     },
   ];
 
